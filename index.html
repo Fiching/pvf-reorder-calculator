@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PVF Reorder Calculator</title>
+<title>PVF Inventory Suite</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -22,116 +22,61 @@
     --good: #1B7F4E;
     --good-soft: #E4F2EB;
     --warn: #B8860B;
+    --warn-soft: #FFF4D9;
+    --danger: #8A2626;
+    --danger-soft: #F8E5E5;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Manrope', system-ui, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  body {
-    min-height: 100vh;
-    background-image:
-      radial-gradient(circle at 100% 0%, rgba(216,67,21,0.04) 0%, transparent 40%),
-      radial-gradient(circle at 0% 100%, rgba(15,17,21,0.03) 0%, transparent 40%);
-  }
-
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Manrope', system-ui, sans-serif; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; background-image: radial-gradient(circle at 100% 0%, rgba(216,67,21,0.04) 0%, transparent 40%), radial-gradient(circle at 0% 100%, rgba(15,17,21,0.03) 0%, transparent 40%); }
   .page { max-width: 1440px; margin: 0 auto; padding: 40px 32px 80px; }
 
-  /* Header */
-  header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; gap: 24px; flex-wrap: wrap; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; gap: 24px; flex-wrap: wrap; }
   .brand { display: flex; flex-direction: column; gap: 8px; }
   .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); font-weight: 500; }
   h1 { font-family: 'DM Serif Display', serif; font-size: 48px; line-height: 1.05; font-weight: 400; letter-spacing: -0.02em; }
   h1 em { color: var(--accent); font-style: normal; }
   .tagline { font-size: 15px; color: var(--ink-muted); max-width: 480px; }
 
-  /* Control panel */
-  .control-panel {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 28px;
-    margin-bottom: 32px;
-    position: relative;
-  }
-  .control-panel::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 48px; height: 3px;
-    background: var(--accent);
-  }
+  .upload-strip { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; position: relative; }
+  .upload-strip::before { content: ''; position: absolute; top: 0; left: 0; width: 48px; height: 3px; background: var(--accent); }
+  .drop-zone { flex: 1; border: 2px dashed var(--line-strong); background: var(--bg); padding: 20px 24px; text-align: center; cursor: pointer; transition: all 0.15s ease; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+  .drop-zone.has-file { border-style: solid; border-color: var(--good); background: var(--good-soft); padding: 16px 24px; }
+  .drop-text { font-size: 15px; color: var(--ink); font-weight: 500; }
+  .drop-hint { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+  .file-info { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--good); margin-top: 6px; }
+  #fileInput { display: none; }
 
+  .tabs { display: flex; gap: 2px; margin-bottom: 24px; border-bottom: 2px solid var(--ink); }
+  .tab { padding: 14px 28px; background: transparent; border: 1px solid transparent; border-bottom: none; font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 500; color: var(--ink-muted); cursor: pointer; transition: all 0.15s; position: relative; top: 2px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .tab-count { display: inline-block; margin-left: 8px; padding: 1px 7px; background: var(--line); color: var(--ink-muted); font-size: 10px; border-radius: 10px; font-weight: 600; }
+  .tab.active .tab-count { background: var(--accent); color: white; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .control-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 24px 28px; margin-bottom: 24px; position: relative; }
   .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .panel-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted); font-weight: 500; }
 
-  .drop-zone {
-    border: 2px dashed var(--line-strong);
-    background: var(--bg);
-    padding: 48px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    margin-bottom: 24px;
-  }
-  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: var(--accent-soft); }
-  .drop-zone.has-file { border-style: solid; border-color: var(--good); background: var(--good-soft); }
-  .drop-icon { font-family: 'JetBrains Mono', monospace; font-size: 28px; color: var(--ink-soft); margin-bottom: 12px; }
-  .drop-text { font-size: 16px; color: var(--ink); margin-bottom: 4px; font-weight: 500; }
-  .drop-hint { font-size: 13px; color: var(--ink-muted); }
-  .file-info { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--good); margin-top: 8px; }
-  #fileInput { display: none; }
-
-  /* Config grid */
-  .config-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
-  }
+  .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
   .config-item { display: flex; flex-direction: column; gap: 6px; }
   .config-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); }
-  .config-input, .config-select {
-    padding: 10px 12px;
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    color: var(--ink);
-    border-radius: 2px;
-  }
+  .config-input, .config-select { padding: 10px 12px; border: 1px solid var(--line-strong); background: var(--surface); font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--ink); border-radius: 2px; }
   .config-input:focus, .config-select:focus { outline: none; border-color: var(--accent); }
-  .config-input:disabled { background: var(--bg); color: var(--ink-soft); cursor: not-allowed; }
   .config-hint { font-size: 11px; color: var(--ink-soft); margin-top: 4px; line-height: 1.3; }
 
-  /* Smart filter block */
-  .smart-filter-block {
-    margin-top: 20px;
-    padding: 20px;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-  }
-  .smart-filter-header { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 0; }
+  .smart-filter-block { margin-top: 20px; padding: 20px; background: var(--bg); border: 1px solid var(--line); border-radius: 2px; }
+  .smart-filter-header { display: flex; gap: 16px; align-items: flex-start; }
   .smart-filter-block.enabled .smart-filter-header { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
-  .smart-filter-title { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 15px; color: var(--ink); margin-bottom: 2px; }
+  .smart-filter-title { font-weight: 600; font-size: 15px; color: var(--ink); margin-bottom: 2px; }
   .smart-filter-sub { font-size: 13px; color: var(--ink-muted); line-height: 1.4; }
-  .smart-filter-grid {
-    display: none;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-  }
+  .smart-filter-grid { display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
   .smart-filter-block.enabled .smart-filter-grid { display: grid; }
 
-  /* Toggle switch */
   .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; margin-top: 2px; }
   .switch input { opacity: 0; width: 0; height: 0; }
   .slider { position: absolute; cursor: pointer; inset: 0; background: var(--line-strong); transition: 0.2s; border-radius: 24px; }
@@ -139,183 +84,86 @@
   input:checked + .slider { background: var(--accent); }
   input:checked + .slider::before { transform: translateX(20px); }
 
-  /* Summary cards */
-  .summary-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0;
-    margin-bottom: 32px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-  }
-  .stat { padding: 24px 28px; border-right: 1px solid var(--line); position: relative; }
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--line); }
+  .stat { padding: 22px 26px; border-right: 1px solid var(--line); }
   .stat:last-child { border-right: none; }
   .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted); margin-bottom: 8px; }
-  .stat-value { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1; letter-spacing: -0.01em; }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 32px; line-height: 1; letter-spacing: -0.01em; }
   .stat-value.accent { color: var(--accent); }
+  .stat-value.good { color: var(--good); }
+  .stat-value.danger { color: var(--danger); }
   .stat-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); margin-top: 6px; }
 
-  /* Filter bar */
-  .filter-bar {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-    padding: 16px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-bottom: none;
-  }
-  .filter-bar label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--ink-muted);
-  }
-  .search-input, .filter-select {
-    padding: 8px 12px;
-    border: 1px solid var(--line-strong);
-    background: var(--bg);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    border-radius: 2px;
-    min-width: 140px;
-  }
+  .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-bottom: none; }
+  .filter-bar label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted); }
+  .search-input, .filter-select { padding: 8px 12px; border: 1px solid var(--line-strong); background: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: 13px; border-radius: 2px; min-width: 140px; }
   .search-input { flex: 1; min-width: 220px; }
-  .btn {
-    padding: 9px 18px;
-    background: var(--ink);
-    color: var(--bg);
-    border: none;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: background 0.15s;
-  }
+  .btn { padding: 9px 18px; background: var(--ink); color: var(--bg); border: none; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
   .btn:hover { background: var(--accent); }
   .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); }
   .btn-secondary:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   .filter-count { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-muted); }
 
-  /* Table */
   .table-wrap { background: var(--surface); border: 1px solid var(--line); overflow-x: auto; max-height: 70vh; overflow-y: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead { position: sticky; top: 0; background: var(--ink); z-index: 10; }
-  th {
-    padding: 12px 14px;
-    text-align: left;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--bg);
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-  }
+  th { padding: 12px 14px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bg); font-weight: 500; white-space: nowrap; cursor: pointer; user-select: none; }
   th:hover { color: var(--accent); }
   th.num { text-align: right; }
   th .sort-ind { opacity: 0.4; margin-left: 4px; font-size: 9px; }
   th.sorted .sort-ind { opacity: 1; color: var(--accent); }
-  td {
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--line);
-    vertical-align: middle;
-    white-space: nowrap;
-  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
   td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
   td.part { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--ink); }
   td.desc { max-width: 320px; overflow: hidden; text-overflow: ellipsis; color: var(--ink-muted); }
-  td.vendor { color: var(--ink-muted); font-size: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  td.vendor, td.bin { color: var(--ink-muted); font-size: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; font-family: 'JetBrains Mono', monospace; }
   tbody tr:hover { background: var(--accent-soft); }
   tbody tr.highlight td.order-qty { font-weight: 700; color: var(--accent); }
-  .skip-reason {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--ink-soft);
-    padding: 2px 6px;
-    background: var(--line);
-    border-radius: 2px;
-    cursor: help;
-  }
+  tbody tr.drr-row td.ext-cost { font-weight: 700; color: var(--good); }
+  tbody tr.cost-row td.ext-cost { font-weight: 700; color: var(--danger); }
 
-  .tier-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    border-radius: 2px;
-    background: var(--line);
-    color: var(--ink);
-  }
+  .tier-badge, .uom-badge, .status-badge, .reason-badge { display: inline-block; padding: 2px 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; border-radius: 2px; background: var(--line); color: var(--ink); }
   .tier-1 { background: #1B7F4E; color: white; }
   .tier-2 { background: #3FA66E; color: white; }
   .tier-3 { background: #C8A64B; color: white; }
   .tier-4 { background: #D88C3E; color: white; }
   .tier-5 { background: #CFC8B9; color: var(--ink); }
+  .tier-ns { background: var(--ink); color: var(--bg); }
 
-  .uom-badge {
-    display: inline-block;
-    padding: 2px 7px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    border-radius: 2px;
-    background: transparent;
-    color: var(--ink-muted);
-    border: 1px solid var(--line-strong);
-  }
+  .uom-badge { background: transparent; color: var(--ink-muted); border: 1px solid var(--line-strong); }
   .uom-c { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
-  .uom-m { background: #FFF4D9; color: var(--warn); border-color: var(--warn); }
+  .uom-m { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
 
-  .empty-state { padding: 80px 24px; text-align: center; color: var(--ink-muted); }
-  .empty-state h3 { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 8px; color: var(--ink); font-weight: 400; }
+  .status-t { background: var(--warn-soft); color: var(--warn); }
+  .status-sp { background: #EDE4F5; color: #6B3FA0; }
+  .status-s { background: var(--line); color: var(--ink-muted); }
+  .status-nq { background: var(--danger-soft); color: var(--danger); }
 
-  /* Footer */
-  .foot { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: var(--ink-soft); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .reason-badge { background: var(--danger-soft); color: var(--danger); }
+  .reason-badge.minor { background: var(--line); color: var(--ink-muted); }
 
-  /* Method explainer */
-  details.method {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 16px 20px;
-    margin-bottom: 32px;
-    border-radius: 2px;
-  }
-  details.method summary {
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--ink-muted);
-    font-weight: 500;
-    list-style: none;
-  }
+  .skip-reason { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); padding: 2px 6px; background: var(--line); border-radius: 2px; cursor: help; }
+
+  details.method { background: var(--surface); border: 1px solid var(--line); padding: 16px 20px; margin-bottom: 24px; border-radius: 2px; }
+  details.method summary { cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted); font-weight: 500; list-style: none; }
   details.method summary::before { content: '+ '; color: var(--accent); font-weight: 700; }
   details[open].method summary::before { content: '− '; }
   .method-body { padding-top: 16px; font-size: 14px; line-height: 1.7; color: var(--ink-muted); }
   .method-body code { background: var(--bg); padding: 2px 6px; border-radius: 2px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink); border: 1px solid var(--line); }
   .method-body strong { color: var(--ink); }
   .formula { background: var(--bg); padding: 12px 16px; margin: 12px 0; border-left: 3px solid var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink); }
+  .method-body p + p { margin-top: 8px; }
+
+  .foot { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: var(--ink-soft); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
 
   @media (max-width: 780px) {
     .page { padding: 24px 16px 60px; }
     h1 { font-size: 34px; }
-    .stat-value { font-size: 28px; }
+    .stat-value { font-size: 26px; }
     .filter-bar { flex-direction: column; align-items: stretch; }
     .filter-count { margin-left: 0; }
+    .tabs { flex-wrap: wrap; }
+    .upload-strip { flex-direction: column; }
   }
 </style>
 </head>
@@ -325,178 +173,304 @@
 
   <header>
     <div class="brand">
-      <div class="eyebrow">PVF Inventory · Replenishment Tool</div>
-      <h1>Reorder <em>Calculator</em></h1>
+      <div class="eyebrow">PVF Inventory · Branch Operations Suite</div>
+      <h1>Inventory <em>Suite</em></h1>
     </div>
-    <p class="tagline">Drop in an inventory export — out comes a clean buy list to bring stocked items to a target months-of-demand position.</p>
+    <p class="tagline">Three workflows, one upload. Reorder what's selling, DRR what isn't, cost out what can't go back.</p>
   </header>
 
-  <div class="control-panel">
-    <div class="panel-header">
-      <div class="panel-title">01 · Upload & Configure</div>
-    </div>
-
+  <div class="upload-strip">
     <div class="drop-zone" id="dropZone">
-      <div class="drop-icon">[ + ]</div>
-      <div class="drop-text">Drop Excel export here or click to browse</div>
-      <div class="drop-hint">Accepts .xlsx files from your inventory system</div>
+      <div class="drop-text">Drop Excel inventory export here or click to browse</div>
+      <div class="drop-hint">Accepts .xlsx files · Powers all three tools below</div>
       <div class="file-info" id="fileInfo"></div>
     </div>
     <input type="file" id="fileInput" accept=".xlsx,.xls" />
+  </div>
 
-    <div class="config-grid">
-      <div class="config-item">
-        <label class="config-label">Target Months of Demand</label>
-        <input type="number" class="config-input" id="targetMonths" value="3" min="1" max="12" step="0.5" />
+  <nav class="tabs">
+    <button class="tab active" data-tab="reorder">Reorder <span class="tab-count" id="reorderCount">—</span></button>
+    <button class="tab" data-tab="drr">DRR Ticket <span class="tab-count" id="drrCount">—</span></button>
+    <button class="tab" data-tab="costing">Costing <span class="tab-count" id="costingCount">—</span></button>
+  </nav>
+
+  <!-- REORDER TAB -->
+  <div class="tab-panel active" id="panel-reorder">
+
+    <div class="control-panel">
+      <div class="panel-header"><div class="panel-title">Reorder · Replenishment Configuration</div></div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label class="config-label">Target Months of Demand</label>
+          <input type="number" class="config-input" id="targetMonths" value="3" min="1" max="12" step="0.5" />
+        </div>
+        <div class="config-item">
+          <label class="config-label">Safety Stock (Months)</label>
+          <input type="number" class="config-input" id="safetyMonths" value="0" min="0" max="6" step="0.5" />
+        </div>
+        <div class="config-item">
+          <label class="config-label">Tier Filter</label>
+          <select class="config-select" id="tierFilter">
+            <option value="stocked">Stocked only (TIER 1–5)</option>
+            <option value="fast">Fast movers only (TIER 1–3)</option>
+            <option value="all">All items (include non-stock)</option>
+          </select>
+        </div>
+        <div class="config-item">
+          <label class="config-label">Round Up To</label>
+          <select class="config-select" id="roundMode">
+            <option value="ppq">PPQ (Pre-Pack Qty) if set</option>
+            <option value="perqty">Per Qty multiple</option>
+            <option value="none">No rounding</option>
+          </select>
+        </div>
       </div>
-      <div class="config-item">
-        <label class="config-label">Safety Stock (Months)</label>
-        <input type="number" class="config-input" id="safetyMonths" value="0" min="0" max="6" step="0.5" />
-      </div>
-      <div class="config-item">
-        <label class="config-label">Tier Filter</label>
-        <select class="config-select" id="tierFilter">
-          <option value="stocked">Stocked only (TIER 1–5)</option>
-          <option value="fast">Fast movers only (TIER 1–3)</option>
-          <option value="all">All items (include non-stock)</option>
-        </select>
-      </div>
-      <div class="config-item">
-        <label class="config-label">Round Up To</label>
-        <select class="config-select" id="roundMode">
-          <option value="ppq">PPQ (Pre-Pack Qty) if set</option>
-          <option value="perqty">Per Qty multiple</option>
-          <option value="none">No rounding</option>
-        </select>
+
+      <div class="smart-filter-block">
+        <div class="smart-filter-header">
+          <label class="switch"><input type="checkbox" id="smartFilter" checked /><span class="slider"></span></label>
+          <div>
+            <div class="smart-filter-title">Smart Filter</div>
+            <div class="smart-filter-sub">Skip low-value lines and slow-moving cheap items that aren't worth the PO</div>
+          </div>
+        </div>
+        <div class="smart-filter-grid">
+          <div class="config-item">
+            <label class="config-label">Min Line Value ($)</label>
+            <input type="number" class="config-input" id="minLineValue" value="25" min="0" step="5" />
+            <span class="config-hint">Skip if Qty × Unit Cost is below this</span>
+          </div>
+          <div class="config-item">
+            <label class="config-label">Slow Mover: Max Monthly Demand</label>
+            <input type="number" class="config-input" id="slowDemand" value="3" min="0" step="1" />
+            <span class="config-hint">Flag items selling this much or less per month</span>
+          </div>
+          <div class="config-item">
+            <label class="config-label">Slow Mover: Max Unit Cost ($)</label>
+            <input type="number" class="config-input" id="slowCost" value="20" min="0" step="5" />
+            <span class="config-hint">Skip slow items below this unit cost</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="smart-filter-block">
-      <div class="smart-filter-header">
-        <label class="switch">
-          <input type="checkbox" id="smartFilter" checked />
-          <span class="slider"></span>
-        </label>
-        <div>
-          <div class="smart-filter-title">Smart Filter</div>
-          <div class="smart-filter-sub">Skip low-value lines and slow-moving cheap items that aren't worth the PO</div>
+    <details class="method">
+      <summary>How the reorder calculation works</summary>
+      <div class="method-body">
+        <div class="formula">
+          Target = Avg Monthly Demand × (Target Months + Safety Months)<br>
+          Position = On Hand + On PO − On BO<br>
+          <strong>Order Qty = MAX(0, Target − Position)</strong>, rounded up to PPQ
         </div>
+        <p><strong>UOM auto-detect:</strong> The tool derives effective unit cost from the system's extended amounts, so pipe priced per 100 ft (UOM=C) calculates correctly without a separate column.</p>
+        <p><strong>Smart Filter rules:</strong> Slow &amp; cheap (demand ≤ threshold AND cost &lt; threshold) runs first, then minimum line value. Skipped items show a <code>skip</code> badge when "All matched items" is selected.</p>
       </div>
-      <div class="smart-filter-grid" id="smartFilterGrid">
-        <div class="config-item">
-          <label class="config-label">Min Line Value ($)</label>
-          <input type="number" class="config-input" id="minLineValue" value="25" min="0" step="5" />
-          <span class="config-hint">Skip if Order Qty × Unit Cost is below this</span>
-        </div>
-        <div class="config-item">
-          <label class="config-label">Slow Mover: Max Monthly Demand</label>
-          <input type="number" class="config-input" id="slowDemand" value="3" min="0" step="1" />
-          <span class="config-hint">Flag items selling this much or less per month</span>
-        </div>
-        <div class="config-item">
-          <label class="config-label">Slow Mover: Max Unit Cost ($)</label>
-          <input type="number" class="config-input" id="slowCost" value="20" min="0" step="5" />
-          <span class="config-hint">Skip slow items below this unit cost</span>
-        </div>
+    </details>
+
+    <div id="reorderResults" style="display:none;">
+      <div class="summary-row" id="reorderSummary"></div>
+      <div class="filter-bar">
+        <input type="text" class="search-input" id="reorderSearch" placeholder="Search part # or description..." />
+        <label>Vendor:</label>
+        <select class="filter-select" id="reorderVendor"><option value="">All vendors</option></select>
+        <label>Show:</label>
+        <select class="filter-select" id="reorderShow">
+          <option value="needed">Needs order only</option>
+          <option value="all">All matched items</option>
+        </select>
+        <span class="filter-count" id="reorderFilterCount"></span>
+        <button class="btn btn-secondary" id="exportReorder">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th data-table="reorder" data-sort="partNumber">Part # <span class="sort-ind">▾</span></th>
+            <th data-table="reorder" data-sort="description">Description <span class="sort-ind">▾</span></th>
+            <th data-table="reorder" data-sort="tier">Tier <span class="sort-ind">▾</span></th>
+            <th data-table="reorder" data-sort="uom">UOM <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="avgDmd">Mo. Dmd <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="orderQty">Order Qty <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="onHand">On Hand <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="onPO">On PO <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="onBO">On BO <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="target">Target <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="cost">Unit Cost <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="extCost">Ext. Cost <span class="sort-ind">▾</span></th>
+            <th data-table="reorder" data-sort="vendor">Vendor <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="reorder" data-sort="leadTime">Lead <span class="sort-ind">▾</span></th>
+          </tr></thead>
+          <tbody id="reorderBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <details class="method">
-    <summary>How the calculation works</summary>
-    <div class="method-body">
-      <p>For every stocked item (TIER 1–5), the tool computes a projected stock position and compares it to a target based on your monthly demand.</p>
-      <div class="formula">
-        Target Stock&nbsp; = &nbsp;Avg Monthly Demand × (Target Months + Safety Months)<br>
-        Position&nbsp; = &nbsp;On Hand&nbsp;+&nbsp;On PO&nbsp;−&nbsp;On BO<br>
-        <strong>Order Qty&nbsp; = &nbsp;MAX(0, Target − Position)</strong>, rounded up to PPQ
+  <!-- DRR TAB -->
+  <div class="tab-panel" id="panel-drr">
+
+    <div class="control-panel">
+      <div class="panel-header"><div class="panel-title">DRR Ticket · Return to Hub</div></div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label class="config-label">Hub Warehouse</label>
+          <input type="text" class="config-input" id="drrHub" value="423" />
+          <span class="config-hint">Items must replen from this hub to be returnable</span>
+        </div>
+        <div class="config-item">
+          <label class="config-label">Min Extended Value ($)</label>
+          <input type="number" class="config-input" id="drrMinValue" value="50" min="0" step="10" />
+          <span class="config-hint">Below this, not worth the DRR paperwork</span>
+        </div>
+        <div class="config-item">
+          <label class="config-label">Include System-Flagged</label>
+          <select class="config-select" id="drrIncludeFlagged">
+            <option value="yes">Include "Inefficient NQ" items</option>
+            <option value="no">NS/TRN/OBS tier only</option>
+          </select>
+        </div>
       </div>
-      <p><strong>Why this works:</strong> <code>On Hand</code> is what's on the shelf. <code>On PO</code> is already coming in from the vendor — you don't want to double-order it. <code>On BO</code> is what's already owed to customers — that stock is effectively already gone. <code>Avg Dmd Amt</code> is your monthly run-rate.</p>
-      <p><strong>Items excluded by default:</strong> Anything flagged <code>NS/TRN/OBS</code> (non-stock, transition, obsolete) in the Tier column — you wouldn't want to replenish items you're phasing out. Change the Tier Filter above if you want to see them.</p>
-      <p><strong>Rounding:</strong> If <code>PPQ</code> is populated (carton/case quantity), the recommended qty rounds up to the nearest multiple. You'll never get a suggestion to buy 17 of something that ships in cases of 50.</p>
-      <p><strong>UOM handling (pipe is priced per 100):</strong> Pipe items carry a UOM of <code>C</code> meaning <code>Avg Cost</code> is the price per 100 feet, not per foot. The tool auto-detects this by cross-checking the system's extended amounts (<code>Ext OHB Amt</code>, <code>Ext Avail Amt</code>, <code>Ext Open PO Amt</code>) against the quantity — so a pipe line showing $921/C correctly reflects as $9.21/ft in the Unit Cost column and the Ext. Cost calculation. The <code>UOM</code> column on the table shows <code>C</code> (per 100), <code>M</code> (per 1,000), or <code>EA</code> for each SKU so you can eyeball it.</p>
-      <p><strong>Smart Filter (optional):</strong> Two rules to keep junk off your buy list:</p>
-      <p>&nbsp;&nbsp;&nbsp;• <strong>Rule 1 — Slow & cheap:</strong> If monthly demand ≤ threshold <em>and</em> unit cost &lt; threshold, skip. Catches the "3 a month at $2 each" items that aren't worth the PO handling cost.</p>
-      <p>&nbsp;&nbsp;&nbsp;• <strong>Rule 2 — Minimum line value:</strong> If the proposed line value (Qty × Unit Cost) is below the threshold, skip. Keeps you from ordering 1 of a $1 widget but preserves 1 of a $100 item.</p>
-      <p>Rule 1 runs first, then Rule 2. Set Show = "All matched items" to see skipped lines with the reason.</p>
-    </div>
-  </details>
-
-  <div id="resultsSection" style="display:none;">
-    <div class="summary-row" id="summaryRow"></div>
-
-    <div class="filter-bar">
-      <input type="text" class="search-input" id="searchInput" placeholder="Search part # or description..." />
-      <label>Vendor:</label>
-      <select class="filter-select" id="vendorFilter"><option value="">All vendors</option></select>
-      <label>Show:</label>
-      <select class="filter-select" id="showFilter">
-        <option value="needed">Needs order only</option>
-        <option value="all">All matched items</option>
-      </select>
-      <span class="filter-count" id="filterCount"></span>
-      <button class="btn btn-secondary" id="exportBtn">Export CSV</button>
     </div>
 
-    <div class="table-wrap">
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th data-sort="partNumber">Part # <span class="sort-ind">▾</span></th>
-            <th data-sort="description">Description <span class="sort-ind">▾</span></th>
-            <th data-sort="tier">Tier <span class="sort-ind">▾</span></th>
-            <th data-sort="uom">UOM <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="avgDmd">Mo. Dmd <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="onHand">On Hand <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="onPO">On PO <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="onBO">On BO <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="target">Target <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="orderQty">Order Qty <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="cost">Unit Cost <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="extCost">Ext. Cost <span class="sort-ind">▾</span></th>
-            <th data-sort="vendor">Vendor <span class="sort-ind">▾</span></th>
-            <th class="num" data-sort="leadTime">Lead <span class="sort-ind">▾</span></th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
+    <details class="method">
+      <summary>How the DRR list is built</summary>
+      <div class="method-body">
+        <p><strong>Disposition pool:</strong> Items you shouldn't be stocking that still have inventory on the shelf. By default this is anything with <code>Tier = NS/TRN/OBS</code> and <code>On Hand &gt; 0</code>. If "Include System-Flagged" is on, the pool also picks up items with system-calculated inefficient quantity (<code>Inefficient Qty - NQ</code> &gt; 0).</p>
+        <p><strong>DRR eligibility (all three must be true):</strong></p>
+        <div class="formula">
+          Replen Whse = Hub (default 423)<br>
+          Extended Value &gt; Min Threshold (default $50)<br>
+          On Hand &gt; 0
+        </div>
+        <p>Items failing any of these fall through to the <strong>Costing</strong> tab with the reason shown. The two tabs together account for every item in the disposition pool.</p>
+      </div>
+    </details>
+
+    <div id="drrResults" style="display:none;">
+      <div class="summary-row" id="drrSummary"></div>
+      <div class="filter-bar">
+        <input type="text" class="search-input" id="drrSearch" placeholder="Search part # or description..." />
+        <label>Status:</label>
+        <select class="filter-select" id="drrStatus">
+          <option value="">All statuses</option>
+          <option value="T">T (Transition)</option>
+          <option value="SP">SP (Special)</option>
+          <option value="S">S (Slow)</option>
+          <option value="NQ">NQ (Non-Qualifying)</option>
+        </select>
+        <span class="filter-count" id="drrFilterCount"></span>
+        <button class="btn btn-secondary" id="exportDRR">Export DRR Ticket</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th data-table="drr" data-sort="partNumber">Part # <span class="sort-ind">▾</span></th>
+            <th data-table="drr" data-sort="description">Description <span class="sort-ind">▾</span></th>
+            <th data-table="drr" data-sort="tier">Tier <span class="sort-ind">▾</span></th>
+            <th data-table="drr" data-sort="prodStatus">Status <span class="sort-ind">▾</span></th>
+            <th data-table="drr" data-sort="uom">UOM <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="drr" data-sort="onHand">Qty On Hand <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="drr" data-sort="cost">Unit Cost <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="drr" data-sort="extCost">Ext. Value <span class="sort-ind">▾</span></th>
+            <th data-table="drr" data-sort="replenWhse">Replen Whse <span class="sort-ind">▾</span></th>
+            <th data-table="drr" data-sort="bin">Bin <span class="sort-ind">▾</span></th>
+          </tr></thead>
+          <tbody id="drrBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <div id="emptyState" class="empty-state" style="display:none;">
-    <h3>No items match your current filters</h3>
-    <p>Try adjusting the tier filter, safety stock, or target months.</p>
+  <!-- COSTING TAB -->
+  <div class="tab-panel" id="panel-costing">
+
+    <div class="control-panel">
+      <div class="panel-header"><div class="panel-title">Costing · Scrap / Write-Off</div></div>
+      <p style="color:var(--ink-muted); font-size:14px; line-height:1.6;">Items in the disposition pool that <strong>can't</strong> be DRR'd — either the wrong replen hub, below the minimum value threshold, or no replen warehouse at all. These get scrapped or disposed. The DRR tab settings control both lists; this page shows what falls through.</p>
+    </div>
+
+    <details class="method">
+      <summary>How the Costing list is built</summary>
+      <div class="method-body">
+        <p>Every item here is in the disposition pool but fails DRR eligibility. The <strong>Reason</strong> column shows which rule caught it:</p>
+        <p>&nbsp;&nbsp;&nbsp;• <strong>Wrong hub</strong> — replen warehouse is something other than the configured hub (5422, 1789, 986, etc.)</p>
+        <p>&nbsp;&nbsp;&nbsp;• <strong>No replen whse</strong> — no replen warehouse assigned, nowhere to send it back</p>
+        <p>&nbsp;&nbsp;&nbsp;• <strong>Below threshold</strong> — extended value is under the DRR minimum; not worth the paperwork</p>
+        <p>Lines here represent real dollar loss — you're writing this value off. Worth scanning periodically for patterns (e.g., repeat customer SPs never picked up) so you can prevent the same issue next time.</p>
+      </div>
+    </details>
+
+    <div id="costingResults" style="display:none;">
+      <div class="summary-row" id="costingSummary"></div>
+      <div class="filter-bar">
+        <input type="text" class="search-input" id="costingSearch" placeholder="Search part # or description..." />
+        <label>Reason:</label>
+        <select class="filter-select" id="costingReason">
+          <option value="">All reasons</option>
+          <option value="Wrong hub">Wrong hub</option>
+          <option value="No replen whse">No replen whse</option>
+          <option value="Below threshold">Below threshold</option>
+        </select>
+        <label>Status:</label>
+        <select class="filter-select" id="costingStatus">
+          <option value="">All statuses</option>
+          <option value="T">T (Transition)</option>
+          <option value="SP">SP (Special)</option>
+          <option value="S">S (Slow)</option>
+          <option value="NQ">NQ (Non-Qualifying)</option>
+        </select>
+        <span class="filter-count" id="costingFilterCount"></span>
+        <button class="btn btn-secondary" id="exportCosting">Export Costing List</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th data-table="costing" data-sort="partNumber">Part # <span class="sort-ind">▾</span></th>
+            <th data-table="costing" data-sort="description">Description <span class="sort-ind">▾</span></th>
+            <th data-table="costing" data-sort="tier">Tier <span class="sort-ind">▾</span></th>
+            <th data-table="costing" data-sort="prodStatus">Status <span class="sort-ind">▾</span></th>
+            <th data-table="costing" data-sort="uom">UOM <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="costing" data-sort="onHand">Qty On Hand <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="costing" data-sort="cost">Unit Cost <span class="sort-ind">▾</span></th>
+            <th class="num" data-table="costing" data-sort="extCost">Ext. Value <span class="sort-ind">▾</span></th>
+            <th data-table="costing" data-sort="reason">Reason <span class="sort-ind">▾</span></th>
+            <th data-table="costing" data-sort="replenWhse">Replen Whse <span class="sort-ind">▾</span></th>
+            <th data-table="costing" data-sort="bin">Bin <span class="sort-ind">▾</span></th>
+          </tr></thead>
+          <tbody id="costingBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <div class="foot">
-    <div>Built for PVF distribution workflows</div>
+    <div>Built for PVF distribution workflows · Reorder · DRR · Costing</div>
     <div id="statusText"></div>
   </div>
 </div>
 
 <script>
 let rawData = [];
-let computed = [];
-let sortKey = 'orderQty';
-let sortDir = 'desc';
+let reorderComputed = [];
+let drrComputed = [];
+let costingComputed = [];
+const sortState = {
+  reorder: { key: 'orderQty', dir: 'desc' },
+  drr: { key: 'extCost', dir: 'desc' },
+  costing: { key: 'extCost', dir: 'desc' }
+};
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n, d = 0) => isNaN(n) || n === null ? '—' : Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmt$ = (n) => isNaN(n) || n === null ? '—' : '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmt$2 = (n) => isNaN(n) || n === null ? '—' : '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const num = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
 
-// File upload handlers
-const dropZone = $('dropZone');
-const fileInput = $('fileInput');
-
+// FILE UPLOAD
+const dropZone = $('dropZone'), fileInput = $('fileInput');
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-});
+dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
 fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
 
 function handleFile(file) {
@@ -509,34 +483,48 @@ function handleFile(file) {
       rawData = XLSX.utils.sheet_to_json(sheet, { defval: null });
       dropZone.classList.add('has-file');
       $('fileInfo').textContent = `✓ ${file.name} · ${rawData.length.toLocaleString()} rows loaded`;
-      compute();
+      computeAll();
     } catch (err) {
       $('fileInfo').textContent = '✗ Could not read file: ' + err.message;
-      $('fileInfo').style.color = 'var(--accent)';
+      $('fileInfo').style.color = 'var(--danger)';
     }
   };
   reader.readAsArrayBuffer(file);
 }
 
-// Re-compute on config change
-['targetMonths', 'safetyMonths', 'tierFilter', 'roundMode', 'minLineValue', 'slowDemand', 'slowCost'].forEach(id => {
-  $(id).addEventListener('change', compute);
-  $(id).addEventListener('input', compute);
-});
-$('smartFilter').addEventListener('change', () => {
-  document.querySelector('.smart-filter-block').classList.toggle('enabled', $('smartFilter').checked);
-  compute();
-});
-// Initial state
-document.querySelector('.smart-filter-block').classList.toggle('enabled', $('smartFilter').checked);
-['searchInput', 'vendorFilter', 'showFilter'].forEach(id => {
-  $(id).addEventListener('input', render);
-  $(id).addEventListener('change', render);
+// TAB NAVIGATION
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.tab).classList.add('active');
+  });
 });
 
-function compute() {
-  if (!rawData.length) return;
+// HELPERS
+function effectiveCost(r) {
+  const avgCost = num(r['Avg Cost']);
+  if (avgCost === 0) return { unit: 0, uom: '—' };
+  const pairs = [['On Hand','Ext OHB Amt'], ['Avail Bal','Ext Avail Amt'], ['On PO','Ext Open PO Amt']];
+  for (const [qCol, eCol] of pairs) {
+    const q = num(r[qCol]), e = num(r[eCol]);
+    if (q > 0 && e > 0) {
+      const unit = e / q;
+      const ratio = avgCost / unit;
+      let uom = 'EA';
+      if (ratio > 50 && ratio < 200) uom = 'C';
+      else if (ratio > 500 && ratio < 2000) uom = 'M';
+      return { unit, uom };
+    }
+  }
+  const cat = String(r['Prod Cat Desc'] || '').toUpperCase();
+  if (cat.includes('PIPE')) return { unit: avgCost / 100, uom: 'C' };
+  return { unit: avgCost, uom: 'EA' };
+}
 
+// REORDER COMPUTE
+function computeReorder() {
   const targetMonths = num($('targetMonths').value) || 3;
   const safetyMonths = num($('safetyMonths').value) || 0;
   const tierFilter = $('tierFilter').value;
@@ -550,252 +538,400 @@ function compute() {
     if (!t) return tierFilter === 'all';
     const s = String(t).toUpperCase().trim();
     if (tierFilter === 'all') return true;
-    if (tierFilter === 'fast') return ['TIER 1', 'TIER 2', 'TIER 3'].includes(s);
-    // stocked (default)
-    return ['TIER 1', 'TIER 2', 'TIER 3', 'TIER 4', 'TIER 5'].includes(s);
+    if (tierFilter === 'fast') return ['TIER 1','TIER 2','TIER 3'].includes(s);
+    return ['TIER 1','TIER 2','TIER 3','TIER 4','TIER 5'].includes(s);
   };
-
   const roundUp = (qty, ppq, perQty) => {
     if (roundMode === 'none' || qty <= 0) return Math.ceil(qty);
     let mult = 1;
-    if (roundMode === 'ppq' && ppq && ppq > 0) mult = ppq;
-    else if (roundMode === 'perqty' && perQty && perQty > 0) mult = perQty;
+    if (roundMode === 'ppq' && ppq > 0) mult = ppq;
+    else if (roundMode === 'perqty' && perQty > 0) mult = perQty;
     return Math.ceil(qty / mult) * mult;
   };
 
-  // Derive effective unit cost using system's extended amounts.
-  // This automatically handles UOM (each vs C = per 100 for pipe) because
-  // the system's Ext OHB/Avail/PO amounts are already UOM-correct.
-  const effectiveCost = (r) => {
-    const avgCost = num(r['Avg Cost']);
-    if (avgCost === 0) return { unit: 0, uom: '—' };
-    const pairs = [
-      ['On Hand', 'Ext OHB Amt'],
-      ['Avail Bal', 'Ext Avail Amt'],
-      ['On PO', 'Ext Open PO Amt']
-    ];
-    for (const [qtyCol, extCol] of pairs) {
-      const q = num(r[qtyCol]);
-      const e = num(r[extCol]);
-      if (q > 0 && e > 0) {
-        const unit = e / q;
-        // If derived cost is ~1% of Avg Cost, UOM is C (per 100)
-        const ratio = avgCost / unit;
-        let uom = 'EA';
-        if (ratio > 50 && ratio < 200) uom = 'C';
-        else if (ratio > 500 && ratio < 2000) uom = 'M';
-        return { unit, uom };
+  reorderComputed = rawData.filter(r => tierMatches(r['Tier'])).map(r => {
+    const avgDmd = num(r['Avg Dmd Amt']);
+    const onHand = num(r['On Hand']);
+    const onPO = num(r['On PO']);
+    const onBO = num(r['On BO']);
+    const ppq = num(r['PPQ']);
+    const perQty = num(r['Per Qty']);
+    const { unit: unitCost, uom } = effectiveCost(r);
+    const target = avgDmd * (targetMonths + safetyMonths);
+    const position = onHand + onPO - onBO;
+    const rawNeed = target - position;
+    let orderQty = rawNeed > 0 ? roundUp(rawNeed, ppq, perQty) : 0;
+    let extCost = orderQty * unitCost;
+    let skipReason = '';
+    if (smartOn && orderQty > 0) {
+      if (avgDmd <= slowDemand && unitCost < slowCost) {
+        skipReason = `Slow/cheap · ${avgDmd.toFixed(1)}/mo @ $${unitCost.toFixed(2)}`;
+        orderQty = 0; extCost = 0;
+      } else if (extCost < minLineValue) {
+        skipReason = `Line value < $${minLineValue}`;
+        orderQty = 0; extCost = 0;
       }
     }
-    // Fallback: pipe category items are typically priced per 100
-    const cat = String(r['Prod Cat Desc'] || '').toUpperCase();
-    if (cat.includes('PIPE')) return { unit: avgCost / 100, uom: 'C' };
-    return { unit: avgCost, uom: 'EA' };
-  };
+    return {
+      partNumber: r['Alt Code'] || '', description: r['Description'] || '',
+      tier: r['Tier'] || '', prodStatus: r['Prod Status'] || '',
+      avgDmd, onHand, onPO, onBO,
+      target: Math.round(target*10)/10, orderQty, skipReason,
+      cost: unitCost, uom, extCost,
+      vendor: r['Primary Vendor'] || r['Replen Vendor'] || '',
+      leadTime: num(r['Lead Time']), bin: r['Bin Location'] || ''
+    };
+  });
 
-  computed = rawData
-    .filter(r => tierMatches(r['Tier']))
-    .map(r => {
-      const avgDmd = num(r['Avg Dmd Amt']);
-      const onHand = num(r['On Hand']);
-      const onPO = num(r['On PO']);
-      const onBO = num(r['On BO']);
-      const ppq = num(r['PPQ']);
-      const perQty = num(r['Per Qty']);
-      const { unit: unitCost, uom } = effectiveCost(r);
-
-      const target = avgDmd * (targetMonths + safetyMonths);
-      const position = onHand + onPO - onBO;
-      const rawNeed = target - position;
-      let orderQty = rawNeed > 0 ? roundUp(rawNeed, ppq, perQty) : 0;
-      let extCost = orderQty * unitCost;
-      let skipReason = '';
-
-      // Smart filter rules
-      if (smartOn && orderQty > 0) {
-        if (avgDmd <= slowDemand && unitCost < slowCost) {
-          skipReason = `Slow/cheap · ${avgDmd.toFixed(1)}/mo @ $${unitCost.toFixed(2)}`;
-          orderQty = 0; extCost = 0;
-        } else if (extCost < minLineValue) {
-          skipReason = `Line value < $${minLineValue}`;
-          orderQty = 0; extCost = 0;
-        }
-      }
-
-      return {
-        partNumber: r['Alt Code'] || '',
-        description: r['Description'] || '',
-        tier: r['Tier'] || '',
-        prodStatus: r['Prod Status'] || '',
-        avgDmd, onHand, onPO, onBO,
-        target: Math.round(target * 10) / 10,
-        position: Math.round(position * 10) / 10,
-        orderQty,
-        skipReason,
-        cost: unitCost,
-        rawCost: num(r['Avg Cost']),
-        uom,
-        extCost,
-        vendor: r['Primary Vendor'] || r['Replen Vendor'] || '',
-        leadTime: num(r['Lead Time']),
-        ppq, perQty,
-        whse: r['Whse'] || '',
-        bin: r['Bin Location'] || '',
-        prodCat: r['Prod Cat Desc'] || ''
-      };
-    });
-
-  // Populate vendor dropdown
-  const vendors = [...new Set(computed.map(r => r.vendor).filter(v => v))].sort();
-  const vf = $('vendorFilter');
-  const cur = vf.value;
-  vf.innerHTML = '<option value="">All vendors</option>' + vendors.map(v => `<option value="${v.replace(/"/g, '&quot;')}">${v}</option>`).join('');
+  const vendors = [...new Set(reorderComputed.map(r => r.vendor).filter(v => v))].sort();
+  const vf = $('reorderVendor'), cur = vf.value;
+  vf.innerHTML = '<option value="">All vendors</option>' + vendors.map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
   vf.value = cur;
-
-  render();
 }
 
-function getFiltered() {
-  const search = $('searchInput').value.toLowerCase().trim();
-  const vendor = $('vendorFilter').value;
-  const show = $('showFilter').value;
+// DRR + COSTING COMPUTE
+function computeDispositions() {
+  const hub = $('drrHub').value.trim();
+  const minValue = num($('drrMinValue').value);
+  const includeFlagged = $('drrIncludeFlagged').value === 'yes';
 
-  return computed.filter(r => {
-    if (show === 'needed' && r.orderQty <= 0) return false;
-    if (vendor && r.vendor !== vendor) return false;
-    if (search) {
-      const hay = (r.partNumber + ' ' + r.description).toLowerCase();
-      if (!hay.includes(search)) return false;
+  drrComputed = [];
+  costingComputed = [];
+
+  rawData.forEach(r => {
+    const tier = String(r['Tier'] || '').toUpperCase().trim();
+    const onHand = num(r['On Hand']);
+    const ineffQty = num(r['Inefficient Qty - NQ']);
+    const isNonStock = tier === 'NS/TRN/OBS' && onHand > 0;
+    const isFlagged = includeFlagged && ineffQty > 0;
+    if (!isNonStock && !isFlagged) return;
+    if (onHand <= 0) return;
+
+    const { unit: unitCost, uom } = effectiveCost(r);
+    const extCost = num(r['Ext OHB Amt']) || (onHand * unitCost);
+    const replenWhse = r['Replen Whse'] != null ? String(r['Replen Whse']).replace(/\.0$/, '') : '';
+
+    const row = {
+      partNumber: r['Alt Code'] || '', description: r['Description'] || '',
+      tier: r['Tier'] || '', prodStatus: r['Prod Status'] || '',
+      onHand, cost: unitCost, uom, extCost,
+      replenWhse, bin: r['Bin Location'] || '',
+      vendor: r['Primary Vendor'] || '', prodCat: r['Prod Cat Desc'] || ''
+    };
+
+    if (!replenWhse) {
+      costingComputed.push({ ...row, reason: 'No replen whse' });
+    } else if (replenWhse !== hub) {
+      costingComputed.push({ ...row, reason: 'Wrong hub' });
+    } else if (extCost <= minValue) {
+      costingComputed.push({ ...row, reason: 'Below threshold' });
+    } else {
+      drrComputed.push(row);
     }
-    return true;
   });
 }
 
-function render() {
+function computeAll() {
   if (!rawData.length) return;
+  computeReorder();
+  computeDispositions();
+  renderReorder();
+  renderDRR();
+  renderCosting();
+  updateTabCounts();
+}
 
-  $('resultsSection').style.display = 'block';
-  const filtered = getFiltered();
+function updateTabCounts() {
+  $('reorderCount').textContent = reorderComputed.filter(r => r.orderQty > 0).length.toLocaleString();
+  $('drrCount').textContent = drrComputed.length.toLocaleString();
+  $('costingCount').textContent = costingComputed.length.toLocaleString();
+}
 
-  // Sort
-  filtered.sort((a, b) => {
-    let av = a[sortKey], bv = b[sortKey];
+// RENDER HELPERS
+function updateSortIndicators(table, key, dir) {
+  document.querySelectorAll(`th[data-table="${table}"]`).forEach(th => {
+    th.classList.toggle('sorted', th.dataset.sort === key);
+    const ind = th.querySelector('.sort-ind');
+    if (ind) ind.textContent = th.dataset.sort === key ? (dir === 'asc' ? '▴' : '▾') : '▾';
+  });
+}
+
+function sortRows(rows, key, dir) {
+  return rows.slice().sort((a, b) => {
+    let av = a[key], bv = b[key];
     if (typeof av === 'string') { av = av.toLowerCase(); bv = (bv || '').toLowerCase(); }
-    if (av < bv) return sortDir === 'asc' ? -1 : 1;
-    if (av > bv) return sortDir === 'asc' ? 1 : -1;
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ? 1 : -1;
     return 0;
   });
+}
 
-  // Summary
-  const needed = computed.filter(r => r.orderQty > 0);
-  const filteredNeeded = filtered.filter(r => r.orderQty > 0);
-  const totalCost = filteredNeeded.reduce((s, r) => s + r.extCost, 0);
-  const totalUnits = filteredNeeded.reduce((s, r) => s + r.orderQty, 0);
-  const uniqueVendors = new Set(filteredNeeded.map(r => r.vendor).filter(v => v)).size;
+function tierClass(tier) {
+  const m = (tier || '').match(/TIER (\d)/);
+  if (m) return 'tier-' + m[1];
+  if (tier === 'NS/TRN/OBS') return 'tier-ns';
+  return '';
+}
 
-  $('summaryRow').innerHTML = `
-    <div class="stat">
-      <div class="stat-label">Lines to Order</div>
-      <div class="stat-value accent">${filteredNeeded.length.toLocaleString()}</div>
-      <div class="stat-sub">of ${computed.length.toLocaleString()} stocked items</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Total Units</div>
-      <div class="stat-value">${totalUnits.toLocaleString()}</div>
-      <div class="stat-sub">across all recommendations</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Extended Cost</div>
-      <div class="stat-value">${fmt$(totalCost)}</div>
-      <div class="stat-sub">at avg unit cost</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Vendors</div>
-      <div class="stat-value">${uniqueVendors}</div>
-      <div class="stat-sub">to contact</div>
-    </div>
+function statusBadge(s) {
+  if (!s) return '—';
+  return `<span class="status-badge status-${s.toLowerCase()}">${s}</span>`;
+}
+
+function uomBadge(u) {
+  return `<span class="uom-badge uom-${u.toLowerCase()}">${u}</span>`;
+}
+
+// REORDER RENDER
+function renderReorder() {
+  if (!rawData.length) return;
+  $('reorderResults').style.display = 'block';
+  const search = $('reorderSearch').value.toLowerCase().trim();
+  const vendor = $('reorderVendor').value;
+  const show = $('reorderShow').value;
+  const filtered = reorderComputed.filter(r => {
+    if (show === 'needed' && r.orderQty <= 0) return false;
+    if (vendor && r.vendor !== vendor) return false;
+    if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const { key, dir } = sortState.reorder;
+  const sorted = sortRows(filtered, key, dir);
+  updateSortIndicators('reorder', key, dir);
+
+  const needed = filtered.filter(r => r.orderQty > 0);
+  const totalCost = needed.reduce((s, r) => s + r.extCost, 0);
+  const totalUnits = needed.reduce((s, r) => s + r.orderQty, 0);
+  const vendors = new Set(needed.map(r => r.vendor).filter(v => v)).size;
+
+  $('reorderSummary').innerHTML = `
+    <div class="stat"><div class="stat-label">Lines to Order</div><div class="stat-value accent">${needed.length.toLocaleString()}</div><div class="stat-sub">of ${reorderComputed.length.toLocaleString()} matched items</div></div>
+    <div class="stat"><div class="stat-label">Total Units</div><div class="stat-value">${totalUnits.toLocaleString()}</div><div class="stat-sub">across all recommendations</div></div>
+    <div class="stat"><div class="stat-label">Extended Cost</div><div class="stat-value">${fmt$(totalCost)}</div><div class="stat-sub">at UOM-corrected unit cost</div></div>
+    <div class="stat"><div class="stat-label">Vendors</div><div class="stat-value">${vendors}</div><div class="stat-sub">to contact</div></div>
   `;
 
-  // Table header sort indicators
-  document.querySelectorAll('th[data-sort]').forEach(th => {
-    th.classList.toggle('sorted', th.dataset.sort === sortKey);
-    const ind = th.querySelector('.sort-ind');
-    if (ind) ind.textContent = th.dataset.sort === sortKey ? (sortDir === 'asc' ? '▴' : '▾') : '▾';
-  });
+  $('reorderBody').innerHTML = sorted.slice(0, 1000).map(r => `
+    <tr class="${r.orderQty > 0 ? 'highlight' : ''}">
+      <td class="part">${r.partNumber}</td>
+      <td class="desc" title="${(r.description||'').replace(/"/g,'&quot;')}">${r.description}</td>
+      <td><span class="tier-badge ${tierClass(r.tier)}">${r.tier || '—'}</span></td>
+      <td>${uomBadge(r.uom)}</td>
+      <td class="num">${fmt(r.avgDmd, 1)}</td>
+      <td class="num order-qty">${r.orderQty > 0 ? fmt(r.orderQty) : (r.skipReason ? `<span class="skip-reason" title="${r.skipReason}">skip</span>` : '—')}</td>
+      <td class="num">${fmt(r.onHand)}</td>
+      <td class="num">${fmt(r.onPO)}</td>
+      <td class="num">${fmt(r.onBO)}</td>
+      <td class="num">${fmt(r.target, 1)}</td>
+      <td class="num">${r.cost > 0 ? (r.cost < 10 ? '$'+r.cost.toFixed(2) : fmt$(r.cost)) : '—'}</td>
+      <td class="num">${r.orderQty > 0 ? fmt$(r.extCost) : '—'}</td>
+      <td class="vendor" title="${(r.vendor||'').replace(/"/g,'&quot;')}">${r.vendor || '—'}</td>
+      <td class="num">${r.leadTime || '—'}</td>
+    </tr>
+  `).join('');
 
-  // Body
-  const body = $('resultsBody');
-  if (filtered.length === 0) {
-    body.innerHTML = '';
-    $('emptyState').style.display = 'block';
-    document.querySelector('.table-wrap').style.display = 'none';
-  } else {
-    $('emptyState').style.display = 'none';
-    document.querySelector('.table-wrap').style.display = 'block';
-    body.innerHTML = filtered.slice(0, 1000).map(r => {
-      const tierNum = (r.tier.match(/TIER (\d)/) || [])[1];
-      const tierClass = tierNum ? `tier-${tierNum}` : '';
-      return `
-        <tr class="${r.orderQty > 0 ? 'highlight' : ''}">
-          <td class="part">${r.partNumber}</td>
-          <td class="desc" title="${r.description.replace(/"/g, '&quot;')}">${r.description}</td>
-          <td><span class="tier-badge ${tierClass}">${r.tier || '—'}</span></td>
-          <td><span class="uom-badge uom-${r.uom.toLowerCase()}">${r.uom}</span></td>
-          <td class="num">${fmt(r.avgDmd, 1)}</td>
-          <td class="num">${fmt(r.onHand)}</td>
-          <td class="num">${fmt(r.onPO)}</td>
-          <td class="num">${fmt(r.onBO)}</td>
-          <td class="num">${fmt(r.target, 1)}</td>
-          <td class="num order-qty">${r.orderQty > 0 ? fmt(r.orderQty) : (r.skipReason ? `<span class="skip-reason" title="${r.skipReason}">skip</span>` : '—')}</td>
-          <td class="num">${r.cost > 0 ? (r.cost < 10 ? '$' + r.cost.toFixed(2) : fmt$(r.cost)) : '—'}</td>
-          <td class="num">${r.orderQty > 0 ? fmt$(r.extCost) : '—'}</td>
-          <td class="vendor" title="${(r.vendor || '').replace(/"/g, '&quot;')}">${r.vendor || '—'}</td>
-          <td class="num">${r.leadTime || '—'}</td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  $('filterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${computed.length.toLocaleString()} items`;
+  $('reorderFilterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${reorderComputed.length.toLocaleString()}`;
   $('statusText').textContent = `Last computed · ${new Date().toLocaleTimeString()}`;
 }
 
-// Sorting
+// DRR RENDER
+function renderDRR() {
+  if (!rawData.length) return;
+  $('drrResults').style.display = 'block';
+  const search = $('drrSearch').value.toLowerCase().trim();
+  const status = $('drrStatus').value;
+  const filtered = drrComputed.filter(r => {
+    if (status && r.prodStatus !== status) return false;
+    if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const { key, dir } = sortState.drr;
+  const sorted = sortRows(filtered, key, dir);
+  updateSortIndicators('drr', key, dir);
+
+  const totalValue = filtered.reduce((s, r) => s + r.extCost, 0);
+  const totalUnits = filtered.reduce((s, r) => s + r.onHand, 0);
+
+  $('drrSummary').innerHTML = `
+    <div class="stat"><div class="stat-label">DRR Lines</div><div class="stat-value good">${filtered.length.toLocaleString()}</div><div class="stat-sub">items eligible to return</div></div>
+    <div class="stat"><div class="stat-label">Units to Return</div><div class="stat-value">${totalUnits.toLocaleString()}</div><div class="stat-sub">pieces on the ticket</div></div>
+    <div class="stat"><div class="stat-label">Recoverable Value</div><div class="stat-value good">${fmt$(totalValue)}</div><div class="stat-sub">coming back to the branch</div></div>
+    <div class="stat"><div class="stat-label">Hub</div><div class="stat-value">${$('drrHub').value}</div><div class="stat-sub">return destination</div></div>
+  `;
+
+  $('drrBody').innerHTML = sorted.slice(0, 1000).map(r => `
+    <tr class="drr-row">
+      <td class="part">${r.partNumber}</td>
+      <td class="desc" title="${(r.description||'').replace(/"/g,'&quot;')}">${r.description}</td>
+      <td><span class="tier-badge ${tierClass(r.tier)}">${r.tier || '—'}</span></td>
+      <td>${statusBadge(r.prodStatus)}</td>
+      <td>${uomBadge(r.uom)}</td>
+      <td class="num">${fmt(r.onHand)}</td>
+      <td class="num">${r.cost > 0 ? (r.cost < 10 ? '$'+r.cost.toFixed(2) : fmt$(r.cost)) : '—'}</td>
+      <td class="num ext-cost">${fmt$2(r.extCost)}</td>
+      <td class="bin">${r.replenWhse || '—'}</td>
+      <td class="bin">${r.bin || '—'}</td>
+    </tr>
+  `).join('');
+
+  $('drrFilterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${drrComputed.length.toLocaleString()}`;
+}
+
+// COSTING RENDER
+function renderCosting() {
+  if (!rawData.length) return;
+  $('costingResults').style.display = 'block';
+  const search = $('costingSearch').value.toLowerCase().trim();
+  const reason = $('costingReason').value;
+  const status = $('costingStatus').value;
+  const filtered = costingComputed.filter(r => {
+    if (reason && r.reason !== reason) return false;
+    if (status && r.prodStatus !== status) return false;
+    if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const { key, dir } = sortState.costing;
+  const sorted = sortRows(filtered, key, dir);
+  updateSortIndicators('costing', key, dir);
+
+  const totalValue = filtered.reduce((s, r) => s + r.extCost, 0);
+  const totalUnits = filtered.reduce((s, r) => s + r.onHand, 0);
+  const wrongHub = filtered.filter(r => r.reason === 'Wrong hub').length;
+  const noWhse = filtered.filter(r => r.reason === 'No replen whse').length;
+  const belowThresh = filtered.filter(r => r.reason === 'Below threshold').length;
+
+  $('costingSummary').innerHTML = `
+    <div class="stat"><div class="stat-label">Lines to Scrap</div><div class="stat-value danger">${filtered.length.toLocaleString()}</div><div class="stat-sub">can't be DRR'd</div></div>
+    <div class="stat"><div class="stat-label">Units to Dispose</div><div class="stat-value">${totalUnits.toLocaleString()}</div><div class="stat-sub">going to the bin</div></div>
+    <div class="stat"><div class="stat-label">Write-Off Value</div><div class="stat-value danger">${fmt$(totalValue)}</div><div class="stat-sub">real dollar loss</div></div>
+    <div class="stat"><div class="stat-label">Breakdown</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;color:var(--ink);">Wrong hub: ${wrongHub}<br>No whse: ${noWhse}<br>&lt; threshold: ${belowThresh}</div></div>
+  `;
+
+  $('costingBody').innerHTML = sorted.slice(0, 1000).map(r => {
+    const cls = r.reason === 'Below threshold' ? 'minor' : '';
+    return `
+    <tr class="cost-row">
+      <td class="part">${r.partNumber}</td>
+      <td class="desc" title="${(r.description||'').replace(/"/g,'&quot;')}">${r.description}</td>
+      <td><span class="tier-badge ${tierClass(r.tier)}">${r.tier || '—'}</span></td>
+      <td>${statusBadge(r.prodStatus)}</td>
+      <td>${uomBadge(r.uom)}</td>
+      <td class="num">${fmt(r.onHand)}</td>
+      <td class="num">${r.cost > 0 ? (r.cost < 10 ? '$'+r.cost.toFixed(2) : fmt$(r.cost)) : '—'}</td>
+      <td class="num ext-cost">${fmt$2(r.extCost)}</td>
+      <td><span class="reason-badge ${cls}">${r.reason}</span></td>
+      <td class="bin">${r.replenWhse || '—'}</td>
+      <td class="bin">${r.bin || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  $('costingFilterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${costingComputed.length.toLocaleString()}`;
+}
+
+// EVENT WIRING
+['targetMonths','safetyMonths','tierFilter','roundMode','minLineValue','slowDemand','slowCost'].forEach(id => {
+  $(id).addEventListener('change', computeAll);
+  $(id).addEventListener('input', computeAll);
+});
+$('smartFilter').addEventListener('change', () => {
+  document.querySelector('.smart-filter-block').classList.toggle('enabled', $('smartFilter').checked);
+  computeAll();
+});
+document.querySelector('.smart-filter-block').classList.toggle('enabled', $('smartFilter').checked);
+
+['drrHub','drrMinValue','drrIncludeFlagged'].forEach(id => {
+  const handler = () => { if (rawData.length) { computeDispositions(); renderDRR(); renderCosting(); updateTabCounts(); }};
+  $(id).addEventListener('change', handler);
+  $(id).addEventListener('input', handler);
+});
+
+['reorderSearch','reorderVendor','reorderShow'].forEach(id => {
+  $(id).addEventListener('input', renderReorder);
+  $(id).addEventListener('change', renderReorder);
+});
+['drrSearch','drrStatus'].forEach(id => {
+  $(id).addEventListener('input', renderDRR);
+  $(id).addEventListener('change', renderDRR);
+});
+['costingSearch','costingReason','costingStatus'].forEach(id => {
+  $(id).addEventListener('input', renderCosting);
+  $(id).addEventListener('change', renderCosting);
+});
+
 document.querySelectorAll('th[data-sort]').forEach(th => {
   th.addEventListener('click', () => {
-    const key = th.dataset.sort;
-    if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-    else { sortKey = key; sortDir = ['partNumber','description','tier','vendor'].includes(key) ? 'asc' : 'desc'; }
-    render();
+    const table = th.dataset.table, key = th.dataset.sort;
+    const state = sortState[table];
+    if (state.key === key) state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+    else { state.key = key; state.dir = ['partNumber','description','tier','vendor','prodStatus','reason','bin','replenWhse'].includes(key) ? 'asc' : 'desc'; }
+    if (table === 'reorder') renderReorder();
+    else if (table === 'drr') renderDRR();
+    else renderCosting();
   });
 });
 
-// CSV Export
-$('exportBtn').addEventListener('click', () => {
-  const filtered = getFiltered().filter(r => r.orderQty > 0);
-  if (!filtered.length) { alert('Nothing to export — no items meet current filters.'); return; }
-
-  const headers = ['Part Number','Description','Tier','UOM','Vendor','Monthly Demand','On Hand','On PO','On BO','Target','Order Qty','Unit Cost','Extended Cost','Lead Time','Bin'];
-  const rows = filtered.map(r => [
-    r.partNumber, r.description, r.tier, r.uom, r.vendor,
-    r.avgDmd, r.onHand, r.onPO, r.onBO, r.target, r.orderQty,
-    r.cost.toFixed(4), r.extCost.toFixed(2), r.leadTime, r.bin
-  ]);
+// CSV EXPORT
+function csvExport(filename, headers, rows) {
+  if (!rows.length) { alert('Nothing to export.'); return; }
   const csv = [headers, ...rows].map(row =>
     row.map(cell => {
       const s = cell === null || cell === undefined ? '' : String(cell);
-      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
     }).join(',')
   ).join('\n');
-
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  const stamp = new Date().toISOString().slice(0,10);
-  a.download = `reorder-list-${stamp}.csv`;
-  a.click();
+  a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+}
+
+$('exportReorder').addEventListener('click', () => {
+  const search = $('reorderSearch').value.toLowerCase().trim();
+  const vendor = $('reorderVendor').value;
+  const rows = reorderComputed.filter(r => {
+    if (r.orderQty <= 0) return false;
+    if (vendor && r.vendor !== vendor) return false;
+    if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  csvExport(
+    `reorder-list-${new Date().toISOString().slice(0,10)}.csv`,
+    ['Part Number','Description','Tier','UOM','Vendor','Monthly Demand','On Hand','On PO','On BO','Target','Order Qty','Unit Cost','Extended Cost','Lead Time','Bin'],
+    rows.map(r => [r.partNumber, r.description, r.tier, r.uom, r.vendor, r.avgDmd, r.onHand, r.onPO, r.onBO, r.target, r.orderQty, r.cost.toFixed(4), r.extCost.toFixed(2), r.leadTime, r.bin])
+  );
+});
+
+$('exportDRR').addEventListener('click', () => {
+  const search = $('drrSearch').value.toLowerCase().trim();
+  const status = $('drrStatus').value;
+  const rows = drrComputed.filter(r => {
+    if (status && r.prodStatus !== status) return false;
+    if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  csvExport(
+    `drr-ticket-hub${$('drrHub').value}-${new Date().toISOString().slice(0,10)}.csv`,
+    ['Part Number','Description','Tier','Prod Status','UOM','Qty On Hand','Unit Cost','Extended Value','Replen Whse','Bin','Primary Vendor'],
+    rows.map(r => [r.partNumber, r.description, r.tier, r.prodStatus, r.uom, r.onHand, r.cost.toFixed(4), r.extCost.toFixed(2), r.replenWhse, r.bin, r.vendor])
+  );
+});
+
+$('exportCosting').addEventListener('click', () => {
+  const search = $('costingSearch').value.toLowerCase().trim();
+  const reason = $('costingReason').value;
+  const status = $('costingStatus').value;
+  const rows = costingComputed.filter(r => {
+    if (reason && r.reason !== reason) return false;
+    if (status && r.prodStatus !== status) return false;
+    if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  csvExport(
+    `costing-list-${new Date().toISOString().slice(0,10)}.csv`,
+    ['Part Number','Description','Tier','Prod Status','UOM','Qty On Hand','Unit Cost','Extended Value','Reason','Replen Whse','Bin','Prod Category'],
+    rows.map(r => [r.partNumber, r.description, r.tier, r.prodStatus, r.uom, r.onHand, r.cost.toFixed(4), r.extCost.toFixed(2), r.reason, r.replenWhse, r.bin, r.prodCat])
+  );
 });
 </script>
 
