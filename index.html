@@ -10,23 +10,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
-    --bg: #FAF7F2;
-    --surface: #FFFFFF;
-    --ink: #0F1115;
-    --ink-muted: #5A5F66;
-    --ink-soft: #8B8F96;
-    --line: #E7E2D8;
-    --line-strong: #CFC8B9;
-    --accent: #D84315;
-    --accent-soft: #FDECE5;
-    --good: #1B7F4E;
-    --good-soft: #E4F2EB;
-    --warn: #B8860B;
-    --warn-soft: #FFF4D9;
-    --danger: #8A2626;
-    --danger-soft: #F8E5E5;
+    --bg: #FAF7F2; --surface: #FFFFFF; --ink: #0F1115; --ink-muted: #5A5F66; --ink-soft: #8B8F96;
+    --line: #E7E2D8; --line-strong: #CFC8B9;
+    --accent: #D84315; --accent-soft: #FDECE5;
+    --good: #1B7F4E; --good-soft: #E4F2EB;
+    --warn: #B8860B; --warn-soft: #FFF4D9;
+    --danger: #8A2626; --danger-soft: #F8E5E5;
+    --info: #1F6FB4; --info-soft: #E4EEF8;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--bg); color: var(--ink); font-family: 'Manrope', system-ui, sans-serif; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
   body { min-height: 100vh; background-image: radial-gradient(circle at 100% 0%, rgba(216,67,21,0.04) 0%, transparent 40%), radial-gradient(circle at 0% 100%, rgba(15,17,21,0.03) 0%, transparent 40%); }
@@ -39,18 +30,30 @@
   h1 em { color: var(--accent); font-style: normal; }
   .tagline { font-size: 15px; color: var(--ink-muted); max-width: 480px; }
 
-  .upload-strip { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; position: relative; }
+  .upload-strip { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 20px 24px; margin-bottom: 16px; position: relative; }
   .upload-strip::before { content: ''; position: absolute; top: 0; left: 0; width: 48px; height: 3px; background: var(--accent); }
-  .drop-zone { flex: 1; border: 2px dashed var(--line-strong); background: var(--bg); padding: 20px 24px; text-align: center; cursor: pointer; transition: all 0.15s ease; }
+  .upload-flex { display: flex; gap: 20px; align-items: stretch; }
+  .drop-zone { flex: 1; border: 2px dashed var(--line-strong); background: var(--bg); padding: 24px; text-align: center; cursor: pointer; transition: all 0.15s ease; min-height: 88px; display: flex; flex-direction: column; justify-content: center; }
   .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: var(--accent-soft); }
-  .drop-zone.has-file { border-style: solid; border-color: var(--good); background: var(--good-soft); padding: 16px 24px; }
+  .drop-zone.has-file { border-style: solid; border-color: var(--good); background: var(--good-soft); }
   .drop-text { font-size: 15px; color: var(--ink); font-weight: 500; }
-  .drop-hint { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
-  .file-info { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--good); margin-top: 6px; }
+  .drop-hint { font-size: 12px; color: var(--ink-muted); margin-top: 4px; }
   #fileInput { display: none; }
+  .loaded-files { margin-top: 16px; display: none; }
+  .loaded-files.show { display: block; }
+  .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .file-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 2px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .file-chip.branch { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .file-chip .x { cursor: pointer; color: var(--ink-soft); font-weight: 600; padding: 0 4px; }
+  .file-chip .x:hover { color: var(--danger); }
+
+  .branch-bar { background: var(--surface); border: 1px solid var(--line); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .branch-bar label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted); }
+  .branch-bar select { padding: 8px 12px; border: 1px solid var(--line-strong); background: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: 13px; border-radius: 2px; }
+  .branch-bar .hint { font-size: 12px; color: var(--ink-muted); margin-left: auto; }
 
   .tabs { display: flex; gap: 2px; margin-bottom: 24px; border-bottom: 2px solid var(--ink); }
-  .tab { padding: 14px 28px; background: transparent; border: 1px solid transparent; border-bottom: none; font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 500; color: var(--ink-muted); cursor: pointer; transition: all 0.15s; position: relative; top: 2px; }
+  .tab { padding: 14px 24px; background: transparent; border: 1px solid transparent; border-bottom: none; font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 500; color: var(--ink-muted); cursor: pointer; transition: all 0.15s; position: relative; top: 2px; }
   .tab:hover { color: var(--ink); }
   .tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   .tab-count { display: inline-block; margin-left: 8px; padding: 1px 7px; background: var(--line); color: var(--ink-muted); font-size: 10px; border-radius: 10px; font-weight: 600; }
@@ -58,10 +61,9 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  .control-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 24px 28px; margin-bottom: 24px; position: relative; }
+  .control-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 24px 28px; margin-bottom: 24px; }
   .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .panel-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted); font-weight: 500; }
-
   .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
   .config-item { display: flex; flex-direction: column; gap: 6px; }
   .config-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); }
@@ -76,7 +78,6 @@
   .smart-filter-sub { font-size: 13px; color: var(--ink-muted); line-height: 1.4; }
   .smart-filter-grid { display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
   .smart-filter-block.enabled .smart-filter-grid { display: grid; }
-
   .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; margin-top: 2px; }
   .switch input { opacity: 0; width: 0; height: 0; }
   .slider { position: absolute; cursor: pointer; inset: 0; background: var(--line-strong); transition: 0.2s; border-radius: 24px; }
@@ -92,6 +93,7 @@
   .stat-value.accent { color: var(--accent); }
   .stat-value.good { color: var(--good); }
   .stat-value.danger { color: var(--danger); }
+  .stat-value.info { color: var(--info); }
   .stat-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); margin-top: 6px; }
 
   .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-bottom: none; }
@@ -115,32 +117,38 @@
   td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
   td.num { font-family: 'JetBrains Mono', monospace; text-align: right; }
   td.part { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--ink); }
-  td.desc { max-width: 320px; overflow: hidden; text-overflow: ellipsis; color: var(--ink-muted); }
+  td.desc { max-width: 280px; overflow: hidden; text-overflow: ellipsis; color: var(--ink-muted); }
   td.vendor, td.bin { color: var(--ink-muted); font-size: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; font-family: 'JetBrains Mono', monospace; }
   tbody tr:hover { background: var(--accent-soft); }
   tbody tr.highlight td.order-qty { font-weight: 700; color: var(--accent); }
   tbody tr.drr-row td.ext-cost { font-weight: 700; color: var(--good); }
   tbody tr.cost-row td.ext-cost { font-weight: 700; color: var(--danger); }
 
-  .tier-badge, .uom-badge, .status-badge, .reason-badge { display: inline-block; padding: 2px 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; border-radius: 2px; background: var(--line); color: var(--ink); }
+  .tier-badge, .uom-badge, .status-badge, .reason-badge, .source-badge, .ffa-badge { display: inline-block; padding: 2px 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; border-radius: 2px; background: var(--line); color: var(--ink); }
   .tier-1 { background: #1B7F4E; color: white; }
   .tier-2 { background: #3FA66E; color: white; }
   .tier-3 { background: #C8A64B; color: white; }
   .tier-4 { background: #D88C3E; color: white; }
   .tier-5 { background: #CFC8B9; color: var(--ink); }
   .tier-ns { background: var(--ink); color: var(--bg); }
-
   .uom-badge { background: transparent; color: var(--ink-muted); border: 1px solid var(--line-strong); }
   .uom-c { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
   .uom-m { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
-
   .status-t { background: var(--warn-soft); color: var(--warn); }
   .status-sp { background: #EDE4F5; color: #6B3FA0; }
   .status-s { background: var(--line); color: var(--ink-muted); }
   .status-nq { background: var(--danger-soft); color: var(--danger); }
-
   .reason-badge { background: var(--danger-soft); color: var(--danger); }
   .reason-badge.minor { background: var(--line); color: var(--ink-muted); }
+
+  .source-hub { background: var(--accent); color: white; }
+  .source-dc { background: var(--info-soft); color: var(--info); }
+  .source-external { background: var(--danger-soft); color: var(--danger); }
+  .ffa-500 { background: var(--info-soft); color: var(--info); }
+  .ffa-1500 { background: #EDE4F5; color: #6B3FA0; }
+  .ffa-5000 { background: var(--accent-soft); color: var(--accent); }
+  .ffa-0 { background: var(--good-soft); color: var(--good); }
+  .ffa-none { background: var(--danger-soft); color: var(--danger); }
 
   .skip-reason { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); padding: 2px 6px; background: var(--line); border-radius: 2px; cursor: help; }
 
@@ -154,6 +162,26 @@
   .formula { background: var(--bg); padding: 12px 16px; margin: 12px 0; border-left: 3px solid var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink); }
   .method-body p + p { margin-top: 8px; }
 
+  /* Sourcing groups */
+  .source-group { background: var(--surface); border: 1px solid var(--line); margin-bottom: 24px; }
+  .source-group-header { padding: 18px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .source-group-header.hub { background: var(--accent-soft); border-bottom-color: var(--accent); }
+  .source-group-header.dc { background: var(--info-soft); border-bottom-color: var(--info); }
+  .source-group-header.external { background: var(--danger-soft); border-bottom-color: var(--danger); }
+  .source-title { font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1.1; }
+  .source-meta { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-muted); }
+  .source-meta strong { color: var(--ink); }
+  .ffa-progress { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
+  .ffa-bar { width: 180px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .ffa-fill { height: 100%; background: var(--good); transition: width 0.3s; }
+  .ffa-fill.under { background: var(--warn); }
+  .ffa-fill.over { background: var(--good); }
+  .ffa-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; }
+  .ffa-label.under { color: var(--warn); }
+  .ffa-label.over { color: var(--good); }
+  .source-table-wrap { overflow-x: auto; max-height: 50vh; overflow-y: auto; }
+  .source-empty { padding: 24px; text-align: center; color: var(--ink-muted); font-style: italic; font-size: 13px; }
+
   .foot { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: var(--ink-soft); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
 
   @media (max-width: 780px) {
@@ -163,7 +191,8 @@
     .filter-bar { flex-direction: column; align-items: stretch; }
     .filter-count { margin-left: 0; }
     .tabs { flex-wrap: wrap; }
-    .upload-strip { flex-direction: column; }
+    .upload-flex { flex-direction: column; }
+    .ffa-progress { margin-left: 0; }
   }
 </style>
 </head>
@@ -176,27 +205,38 @@
       <div class="eyebrow">PVF Inventory · Branch Operations Suite</div>
       <h1>Inventory <em>Suite</em></h1>
     </div>
-    <p class="tagline">Three workflows, one upload. Reorder what's selling, DRR what isn't, cost out what can't go back.</p>
+    <p class="tagline">Four workflows, one upload. Reorder what's selling, DRR what isn't, cost out what can't go back, and source what you need from the cheapest DC.</p>
   </header>
 
   <div class="upload-strip">
-    <div class="drop-zone" id="dropZone">
-      <div class="drop-text">Drop Excel inventory export here or click to browse</div>
-      <div class="drop-hint">Accepts .xlsx files · Powers all three tools below</div>
-      <div class="file-info" id="fileInfo"></div>
+    <div class="upload-flex">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-text">Drop one or more Excel inventory exports</div>
+        <div class="drop-hint">Drag multiple files at once, or click to browse · Each file's Whse column identifies the warehouse</div>
+      </div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" multiple />
     </div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls" />
+    <div class="loaded-files" id="loadedFiles">
+      <div class="panel-title">Loaded warehouses</div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+  </div>
+
+  <div class="branch-bar" id="branchBar" style="display:none;">
+    <label>My Branch:</label>
+    <select id="branchSelect"></select>
+    <span class="hint">Other warehouses are treated as DCs for sourcing</span>
   </div>
 
   <nav class="tabs">
     <button class="tab active" data-tab="reorder">Reorder <span class="tab-count" id="reorderCount">—</span></button>
+    <button class="tab" data-tab="sourcing">Sourcing <span class="tab-count" id="sourcingCount">—</span></button>
     <button class="tab" data-tab="drr">DRR Ticket <span class="tab-count" id="drrCount">—</span></button>
     <button class="tab" data-tab="costing">Costing <span class="tab-count" id="costingCount">—</span></button>
   </nav>
 
   <!-- REORDER TAB -->
   <div class="tab-panel active" id="panel-reorder">
-
     <div class="control-panel">
       <div class="panel-header"><div class="panel-title">Reorder · Replenishment Configuration</div></div>
       <div class="config-grid">
@@ -213,6 +253,7 @@
           <select class="config-select" id="tierFilter">
             <option value="stocked">Stocked only (TIER 1–5)</option>
             <option value="fast">Fast movers only (TIER 1–3)</option>
+            <option value="nonstock">Non-stock only (NS/TRN/OBS · MISC)</option>
             <option value="all">All items (include non-stock)</option>
           </select>
         </div>
@@ -225,7 +266,6 @@
           </select>
         </div>
       </div>
-
       <div class="smart-filter-block">
         <div class="smart-filter-header">
           <label class="switch"><input type="checkbox" id="smartFilter" checked /><span class="slider"></span></label>
@@ -253,7 +293,6 @@
         </div>
       </div>
     </div>
-
     <details class="method">
       <summary>How the reorder calculation works</summary>
       <div class="method-body">
@@ -263,10 +302,9 @@
           <strong>Order Qty = MAX(0, Target − Position)</strong>, rounded up to PPQ
         </div>
         <p><strong>UOM auto-detect:</strong> The tool derives effective unit cost from the system's extended amounts, so pipe priced per 100 ft (UOM=C) calculates correctly without a separate column.</p>
-        <p><strong>Smart Filter rules:</strong> Slow &amp; cheap (demand ≤ threshold AND cost &lt; threshold) runs first, then minimum line value. Skipped items show a <code>skip</code> badge when "All matched items" is selected.</p>
+        <p><strong>Smart Filter rules:</strong> Slow &amp; cheap (demand ≤ threshold AND cost &lt; threshold) runs first, then minimum line value.</p>
       </div>
     </details>
-
     <div id="reorderResults" style="display:none;">
       <div class="summary-row" id="reorderSummary"></div>
       <div class="filter-bar">
@@ -305,9 +343,58 @@
     </div>
   </div>
 
+  <!-- SOURCING TAB -->
+  <div class="tab-panel" id="panel-sourcing">
+    <div class="control-panel">
+      <div class="panel-header"><div class="panel-title">Sourcing · Where to Order From</div></div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label class="config-label">Primary Hub (No Freight)</label>
+          <input type="text" class="config-input" id="srcHub" value="423" />
+          <span class="config-hint">Items here route to your weekly hub truck</span>
+        </div>
+        <div class="config-item">
+          <label class="config-label">DC Stock Threshold</label>
+          <select class="config-select" id="srcStockField">
+            <option value="onHand">On Hand</option>
+            <option value="avail">Available Balance</option>
+          </select>
+          <span class="config-hint">Which DC quantity to use for matching</span>
+        </div>
+        <div class="config-item">
+          <label class="config-label">Show Items With Skip Flag</label>
+          <select class="config-select" id="srcIncludeSkip">
+            <option value="no">No (use Reorder list as-is)</option>
+            <option value="yes">Yes (include filtered items)</option>
+          </select>
+          <span class="config-hint">Smart-filter-skipped items still need to be sourced</span>
+        </div>
+      </div>
+    </div>
+
+    <details class="method">
+      <summary>How sourcing works</summary>
+      <div class="method-body">
+        <p><strong>Inputs:</strong> The current Reorder list (items where Order Qty &gt; 0) crossed with inventory at every uploaded warehouse. With only one file uploaded, the tool falls back to the <code>DC OHB</code> column to give partial visibility.</p>
+        <p><strong>Routing priority:</strong></p>
+        <p>&nbsp;&nbsp;&nbsp;1. <strong>Hub (423)</strong> — anything available at the primary hub goes here, since the weekly hub truck carries it without freight charges.</p>
+        <p>&nbsp;&nbsp;&nbsp;2. <strong>Other DCs</strong> — remaining items grouped by which DC has them, with DCX FFA progress shown. Items below the threshold need either more lines added or freight will apply.</p>
+        <p>&nbsp;&nbsp;&nbsp;3. <strong>External</strong> — items with no DC stock anywhere. These need vendor-direct orders or alternate sourcing.</p>
+        <p><strong>DCX FFA mapping:</strong> Linebuys from the DCX Special Shipping Instructions document are embedded. <code>$500</code> tier (Aquatherm, Viega, NUPI, FNW copper press, Nibco fittings), <code>$1,500</code> tier (Carbon/Stainless Steel Weld Fittings, Tyco Fire, Victaulic, Jones Stephens, OMB, IMI, DuraStar, GroovJoint), <code>$0.01</code> tier (Warren, DSI CS, Avallon Range/Ice). Linebuys not on the approved list are flagged "freight will apply."</p>
+      </div>
+    </details>
+
+    <div id="sourcingResults" style="display:none;">
+      <div class="summary-row" id="sourcingSummary"></div>
+      <div id="sourcingGroups"></div>
+    </div>
+    <div id="sourcingEmpty" style="display:none;">
+      <div class="source-empty" style="padding: 60px 24px; background: var(--surface); border: 1px solid var(--line);">No items in the reorder list to source. Make sure the Reorder tab has items with Order Qty &gt; 0.</div>
+    </div>
+  </div>
+
   <!-- DRR TAB -->
   <div class="tab-panel" id="panel-drr">
-
     <div class="control-panel">
       <div class="panel-header"><div class="panel-title">DRR Ticket · Return to Hub</div></div>
       <div class="config-grid">
@@ -330,21 +417,14 @@
         </div>
       </div>
     </div>
-
     <details class="method">
       <summary>How the DRR list is built</summary>
       <div class="method-body">
-        <p><strong>Disposition pool:</strong> Items you shouldn't be stocking that still have inventory on the shelf. By default this is anything with <code>Tier = NS/TRN/OBS</code> and <code>On Hand &gt; 0</code>. If "Include System-Flagged" is on, the pool also picks up items with system-calculated inefficient quantity (<code>Inefficient Qty - NQ</code> &gt; 0).</p>
-        <p><strong>DRR eligibility (all three must be true):</strong></p>
-        <div class="formula">
-          Replen Whse = Hub (default 423)<br>
-          Extended Value &gt; Min Threshold (default $50)<br>
-          On Hand &gt; 0
-        </div>
-        <p>Items failing any of these fall through to the <strong>Costing</strong> tab with the reason shown. The two tabs together account for every item in the disposition pool.</p>
+        <p><strong>Disposition pool:</strong> Items you shouldn't be stocking that still have inventory. By default <code>Tier = NS/TRN/OBS</code> with <code>On Hand &gt; 0</code>, plus optionally system-flagged inefficient items.</p>
+        <p><strong>DRR eligibility:</strong> Replen Whse = Hub AND Extended Value &gt; threshold AND On Hand &gt; 0.</p>
+        <p>Items failing any check fall through to the <strong>Costing</strong> tab.</p>
       </div>
     </details>
-
     <div id="drrResults" style="display:none;">
       <div class="summary-row" id="drrSummary"></div>
       <div class="filter-bar">
@@ -382,23 +462,16 @@
 
   <!-- COSTING TAB -->
   <div class="tab-panel" id="panel-costing">
-
     <div class="control-panel">
       <div class="panel-header"><div class="panel-title">Costing · Scrap / Write-Off</div></div>
-      <p style="color:var(--ink-muted); font-size:14px; line-height:1.6;">Items in the disposition pool that <strong>can't</strong> be DRR'd — either the wrong replen hub, below the minimum value threshold, or no replen warehouse at all. These get scrapped or disposed. The DRR tab settings control both lists; this page shows what falls through.</p>
+      <p style="color:var(--ink-muted); font-size:14px; line-height:1.6;">Items in the disposition pool that <strong>can't</strong> be DRR'd. The DRR tab settings control both lists.</p>
     </div>
-
     <details class="method">
       <summary>How the Costing list is built</summary>
       <div class="method-body">
-        <p>Every item here is in the disposition pool but fails DRR eligibility. The <strong>Reason</strong> column shows which rule caught it:</p>
-        <p>&nbsp;&nbsp;&nbsp;• <strong>Wrong hub</strong> — replen warehouse is something other than the configured hub (5422, 1789, 986, etc.)</p>
-        <p>&nbsp;&nbsp;&nbsp;• <strong>No replen whse</strong> — no replen warehouse assigned, nowhere to send it back</p>
-        <p>&nbsp;&nbsp;&nbsp;• <strong>Below threshold</strong> — extended value is under the DRR minimum; not worth the paperwork</p>
-        <p>Lines here represent real dollar loss — you're writing this value off. Worth scanning periodically for patterns (e.g., repeat customer SPs never picked up) so you can prevent the same issue next time.</p>
+        <p>Every item here is in the disposition pool but fails DRR eligibility. The <strong>Reason</strong> column shows which rule caught it: Wrong hub, No replen whse, or Below threshold.</p>
       </div>
     </details>
-
     <div id="costingResults" style="display:none;">
       <div class="summary-row" id="costingSummary"></div>
       <div class="filter-bar">
@@ -413,10 +486,7 @@
         <label>Status:</label>
         <select class="filter-select" id="costingStatus">
           <option value="">All statuses</option>
-          <option value="T">T (Transition)</option>
-          <option value="SP">SP (Special)</option>
-          <option value="S">S (Slow)</option>
-          <option value="NQ">NQ (Non-Qualifying)</option>
+          <option value="T">T</option><option value="SP">SP</option><option value="S">S</option><option value="NQ">NQ</option>
         </select>
         <span class="filter-count" id="costingFilterCount"></span>
         <button class="btn btn-secondary" id="exportCosting">Export Costing List</button>
@@ -443,69 +513,79 @@
   </div>
 
   <div class="foot">
-    <div>Built for PVF distribution workflows · Reorder · DRR · Costing</div>
+    <div>Built for PVF distribution workflows · Reorder · Sourcing · DRR · Costing</div>
     <div id="statusText"></div>
   </div>
 </div>
 
 <script>
-let rawData = [];
+// ============= FFA LINEBUY LOOKUP TABLE (from DCX PDF) =============
+const FFA_TARGETS = {
+  // $500 FFA tier
+  '7317': 500, '148': 500, '5258': 500, '215': 500, '149': 500, '5299': 500, '5250': 500,
+  '1638': 500, '5407': 500, '5417': 500,
+  '1938': 500, '5570': 500,
+  '5418': 500, '8047': 500,
+  '2840': 500, '2841': 500, '2815': 500, '2816': 500, '2817': 500, '2818': 500,
+  '3411': 500, '8033': 500, '2690': 500, '5601': 500, '7139': 500,
+  // $1,500 FFA tier
+  '2910': 1500, '2912': 1500, '2911': 1500, '2913': 1500, '3746': 1500,
+  '5436': 1500,
+  '132': 1500, '7630': 1500, '7631': 1500, '7639': 1500, '7640': 1500, '7642': 1500,
+  '8546': 1500, '8547': 1500, '8548': 1500, '8549': 1500, '8550': 1500, '8554': 1500,
+  '8742': 1500, '8743': 1500, '8744': 1500, '8745': 1500,
+  '126': 1500, '324': 1500, '730': 1500, '2254': 1500, '4854': 1500, '4856': 1500,
+  '4860': 1500, '4864': 1500, '5117': 1500, '5606': 1500, '5781': 1500, '5782': 1500,
+  '5173': 1500, '5174': 1500, '8948': 1500, '8949': 1500,
+  '127': 1500, '141': 1500, '144': 1500, '4517': 1500, '5179': 1500, '5270': 1500,
+  '146': 1500, '4518': 1500, '5160': 1500, '5189': 1500, '7308': 1500, '7847': 1500,
+  '7849': 1500, '7850': 1500, '7852': 1500,
+  '3624': 1500,
+  '124': 1500, '4853': 1500, '323': 1500, '4855': 1500,
+  '2593': 1500, '2594': 1500, '2595': 1500,
+  '4481': 1500, '6492': 1500, '5366': 1500,
+  '3396': 1500, '3397': 1500,
+  // $0.01 FFA tier (effectively no minimum)
+  '7874': 0.01, '7875': 0.01, '7876': 0.01,
+  '8071': 0.01, '2577': 0.01, '2890': 0.01,
+};
+const KNOWN_DC_NUMBERS = ['423','5422','1789','986','305','761','533','F140'];
+
+// ============= STATE =============
+let warehouses = {}; // { whseNum: [rows] }
+let branchWhse = null;
+let rawData = []; // = warehouses[branchWhse]
 let reorderComputed = [];
 let drrComputed = [];
 let costingComputed = [];
+let sourcingComputed = null;
 const sortState = {
   reorder: { key: 'orderQty', dir: 'desc' },
   drr: { key: 'extCost', dir: 'desc' },
   costing: { key: 'extCost', dir: 'desc' }
 };
 
+// ============= HELPERS =============
 const $ = (id) => document.getElementById(id);
 const fmt = (n, d = 0) => isNaN(n) || n === null ? '—' : Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmt$ = (n) => isNaN(n) || n === null ? '—' : '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const fmt$2 = (n) => isNaN(n) || n === null ? '—' : '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const num = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const cleanWhse = (v) => v == null || v === '' ? '' : String(v).replace(/\.0$/, '').trim();
+const cleanLinebuy = (v) => v == null || v === '' ? '' : String(v).replace(/\.0$/, '').trim().toUpperCase();
 
-// FILE UPLOAD
-const dropZone = $('dropZone'), fileInput = $('fileInput');
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
-fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
-
-function handleFile(file) {
-  $('fileInfo').textContent = `Loading ${file.name}...`;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      rawData = XLSX.utils.sheet_to_json(sheet, { defval: null });
-      dropZone.classList.add('has-file');
-      $('fileInfo').textContent = `✓ ${file.name} · ${rawData.length.toLocaleString()} rows loaded`;
-      computeAll();
-    } catch (err) {
-      $('fileInfo').textContent = '✗ Could not read file: ' + err.message;
-      $('fileInfo').style.color = 'var(--danger)';
-    }
-  };
-  reader.readAsArrayBuffer(file);
+function ffaTargetFor(linebuy) {
+  const lb = cleanLinebuy(linebuy);
+  if (lb in FFA_TARGETS) return FFA_TARGETS[lb];
+  return null; // not DCX-eligible
 }
 
-// TAB NAVIGATION
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    $('panel-' + tab.dataset.tab).classList.add('active');
-  });
-});
-
-// HELPERS
 function effectiveCost(r) {
   const avgCost = num(r['Avg Cost']);
-  if (avgCost === 0) return { unit: 0, uom: '—' };
+  // No cost in the ERP. This is NOT the same as "cheap" — the item may be
+  // expensive and simply un-costed. Callers must never let a $0 extended
+  // value push these items off a list; flag them for human review instead.
+  if (avgCost === 0) return { unit: 0, uom: '—', noCost: true };
   const pairs = [['On Hand','Ext OHB Amt'], ['Avail Bal','Ext Avail Amt'], ['On PO','Ext Open PO Amt']];
   for (const [qCol, eCol] of pairs) {
     const q = num(r[qCol]), e = num(r[eCol]);
@@ -515,15 +595,122 @@ function effectiveCost(r) {
       let uom = 'EA';
       if (ratio > 50 && ratio < 200) uom = 'C';
       else if (ratio > 500 && ratio < 2000) uom = 'M';
-      return { unit, uom };
+      return { unit, uom, noCost: false };
     }
   }
   const cat = String(r['Prod Cat Desc'] || '').toUpperCase();
-  if (cat.includes('PIPE')) return { unit: avgCost / 100, uom: 'C' };
-  return { unit: avgCost, uom: 'EA' };
+  if (cat.includes('PIPE')) return { unit: avgCost / 100, uom: 'C', noCost: false };
+  return { unit: avgCost, uom: 'EA', noCost: false };
 }
 
-// REORDER COMPUTE
+// ============= FILE UPLOAD =============
+const dropZone = $('dropZone'), fileInput = $('fileInput');
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFiles(e.target.files); });
+
+function handleFiles(files) {
+  const arr = Array.from(files);
+  let remaining = arr.length;
+  arr.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+        // Group by Whse value (a single file should have a single Whse)
+        const grouped = {};
+        rows.forEach(r => {
+          const w = cleanWhse(r['Whse']) || 'UNKNOWN';
+          if (!grouped[w]) grouped[w] = [];
+          grouped[w].push(r);
+        });
+        Object.entries(grouped).forEach(([w, rs]) => {
+          // Merge by Alt Code (newer file wins for duplicate part numbers within same Whse)
+          if (!warehouses[w]) warehouses[w] = [];
+          const existingByPart = {};
+          warehouses[w].forEach(r => { const pn = r['Alt Code']; if (pn) existingByPart[pn] = r; });
+          rs.forEach(r => { const pn = r['Alt Code']; if (pn) existingByPart[pn] = r; });
+          warehouses[w] = Object.values(existingByPart);
+        });
+      } catch (err) {
+        console.error('File parse error:', err);
+      }
+      remaining--;
+      if (remaining === 0) {
+        dropZone.classList.add('has-file');
+        $('loadedFiles').classList.add('show');
+        $('branchBar').style.display = 'flex';
+        autoSelectBranch();
+        renderFileList();
+        computeAll();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function autoSelectBranch() {
+  if (branchWhse && warehouses[branchWhse]) return;
+  // Prefer warehouses that aren't on the known-DC list
+  const whses = Object.keys(warehouses);
+  const nonDC = whses.find(w => !KNOWN_DC_NUMBERS.includes(w) && w !== 'UNKNOWN');
+  branchWhse = nonDC || whses[0];
+}
+
+function renderFileList() {
+  const list = $('fileList');
+  list.innerHTML = '';
+  Object.entries(warehouses).forEach(([w, rows]) => {
+    const chip = document.createElement('div');
+    chip.className = 'file-chip' + (w === branchWhse ? ' branch' : '');
+    chip.innerHTML = `${w === branchWhse ? '★ ' : ''}Whse ${w} · ${rows.length.toLocaleString()} rows <span class="x" data-whse="${w}">×</span>`;
+    list.appendChild(chip);
+  });
+  list.querySelectorAll('.x').forEach(x => {
+    x.addEventListener('click', (e) => {
+      const w = e.target.dataset.whse;
+      delete warehouses[w];
+      if (w === branchWhse) { branchWhse = null; autoSelectBranch(); }
+      renderFileList();
+      renderBranchSelector();
+      computeAll();
+    });
+  });
+  renderBranchSelector();
+}
+
+function renderBranchSelector() {
+  const sel = $('branchSelect');
+  sel.innerHTML = '';
+  Object.keys(warehouses).forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = `Whse ${w} (${warehouses[w].length.toLocaleString()} rows)`;
+    if (w === branchWhse) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+$('branchSelect').addEventListener('change', (e) => {
+  branchWhse = e.target.value;
+  renderFileList();
+  computeAll();
+});
+
+// TAB NAV
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ============= REORDER COMPUTE =============
 function computeReorder() {
   const targetMonths = num($('targetMonths').value) || 3;
   const safetyMonths = num($('safetyMonths').value) || 0;
@@ -535,9 +722,9 @@ function computeReorder() {
   const slowCost = num($('slowCost').value);
 
   const tierMatches = (t) => {
-    if (!t) return tierFilter === 'all';
-    const s = String(t).toUpperCase().trim();
+    const s = t ? String(t).toUpperCase().trim() : '';
     if (tierFilter === 'all') return true;
+    if (tierFilter === 'nonstock') return ['NS/TRN/OBS','MISC'].includes(s);
     if (tierFilter === 'fast') return ['TIER 1','TIER 2','TIER 3'].includes(s);
     return ['TIER 1','TIER 2','TIER 3','TIER 4','TIER 5'].includes(s);
   };
@@ -556,14 +743,18 @@ function computeReorder() {
     const onBO = num(r['On BO']);
     const ppq = num(r['PPQ']);
     const perQty = num(r['Per Qty']);
-    const { unit: unitCost, uom } = effectiveCost(r);
+    const { unit: unitCost, uom, noCost } = effectiveCost(r);
     const target = avgDmd * (targetMonths + safetyMonths);
     const position = onHand + onPO - onBO;
     const rawNeed = target - position;
     let orderQty = rawNeed > 0 ? roundUp(rawNeed, ppq, perQty) : 0;
     let extCost = orderQty * unitCost;
     let skipReason = '';
-    if (smartOn && orderQty > 0) {
+    // Un-costed items bypass both Smart Filter rules. Their unit cost is 0 and
+    // their line value is 0, so both value tests would fire every single time
+    // and silently drop the line. Demand said to buy it — surface it and let
+    // the reviewer decide.
+    if (smartOn && orderQty > 0 && !noCost) {
       if (avgDmd <= slowDemand && unitCost < slowCost) {
         skipReason = `Slow/cheap · ${avgDmd.toFixed(1)}/mo @ $${unitCost.toFixed(2)}`;
         orderQty = 0; extCost = 0;
@@ -577,9 +768,13 @@ function computeReorder() {
       tier: r['Tier'] || '', prodStatus: r['Prod Status'] || '',
       avgDmd, onHand, onPO, onBO,
       target: Math.round(target*10)/10, orderQty, skipReason,
-      cost: unitCost, uom, extCost,
+      cost: unitCost, uom, extCost, noCost,
       vendor: r['Primary Vendor'] || r['Replen Vendor'] || '',
-      leadTime: num(r['Lead Time']), bin: r['Bin Location'] || ''
+      leadTime: num(r['Lead Time']), bin: r['Bin Location'] || '',
+      linebuy: cleanLinebuy(r['Linebuy']), linebuyDesc: r['Linebuy Desc'] || '',
+      replenWhse: cleanWhse(r['Replen Whse']),
+      // DC fields from the row's own file (fallback for single-file mode)
+      dcOhb: num(r['DC OHB']), dcAvail: num(r['DC Avail']),
     };
   });
 
@@ -589,15 +784,12 @@ function computeReorder() {
   vf.value = cur;
 }
 
-// DRR + COSTING COMPUTE
+// ============= DRR + COSTING =============
 function computeDispositions() {
   const hub = $('drrHub').value.trim();
   const minValue = num($('drrMinValue').value);
   const includeFlagged = $('drrIncludeFlagged').value === 'yes';
-
-  drrComputed = [];
-  costingComputed = [];
-
+  drrComputed = []; costingComputed = [];
   rawData.forEach(r => {
     const tier = String(r['Tier'] || '').toUpperCase().trim();
     const onHand = num(r['On Hand']);
@@ -606,11 +798,9 @@ function computeDispositions() {
     const isFlagged = includeFlagged && ineffQty > 0;
     if (!isNonStock && !isFlagged) return;
     if (onHand <= 0) return;
-
     const { unit: unitCost, uom } = effectiveCost(r);
     const extCost = num(r['Ext OHB Amt']) || (onHand * unitCost);
-    const replenWhse = r['Replen Whse'] != null ? String(r['Replen Whse']).replace(/\.0$/, '') : '';
-
+    const replenWhse = cleanWhse(r['Replen Whse']);
     const row = {
       partNumber: r['Alt Code'] || '', description: r['Description'] || '',
       tier: r['Tier'] || '', prodStatus: r['Prod Status'] || '',
@@ -618,26 +808,124 @@ function computeDispositions() {
       replenWhse, bin: r['Bin Location'] || '',
       vendor: r['Primary Vendor'] || '', prodCat: r['Prod Cat Desc'] || ''
     };
-
-    if (!replenWhse) {
-      costingComputed.push({ ...row, reason: 'No replen whse' });
-    } else if (replenWhse !== hub) {
-      costingComputed.push({ ...row, reason: 'Wrong hub' });
-    } else if (extCost <= minValue) {
-      costingComputed.push({ ...row, reason: 'Below threshold' });
-    } else {
-      drrComputed.push(row);
-    }
+    if (!replenWhse) costingComputed.push({ ...row, reason: 'No replen whse' });
+    else if (replenWhse !== hub) costingComputed.push({ ...row, reason: 'Wrong hub' });
+    else if (extCost <= minValue) costingComputed.push({ ...row, reason: 'Below threshold' });
+    else drrComputed.push(row);
   });
 }
 
+// ============= SOURCING COMPUTE =============
+function computeSourcing() {
+  const hub = $('srcHub').value.trim();
+  const stockField = $('srcStockField').value; // 'onHand' or 'avail'
+  const includeSkip = $('srcIncludeSkip').value === 'yes';
+
+  // Build lookup of every other warehouse's stock by part number
+  const otherWhses = Object.keys(warehouses).filter(w => w !== branchWhse);
+  const stockIndex = {}; // { partNum: { whse: { onHand, avail, ... } } }
+  otherWhses.forEach(w => {
+    warehouses[w].forEach(r => {
+      const pn = r['Alt Code']; if (!pn) return;
+      if (!stockIndex[pn]) stockIndex[pn] = {};
+      stockIndex[pn][w] = {
+        onHand: num(r['On Hand']),
+        avail: num(r['Avail Bal']),
+        replenWhse: cleanWhse(r['Replen Whse']),
+      };
+    });
+  });
+
+  // Take reorder list — items needing order (or include-skip flag)
+  const needed = reorderComputed.filter(r => {
+    if (r.orderQty > 0) return true;
+    if (includeSkip && r.skipReason) return true;
+    return false;
+  });
+
+  // For each needed item, find sources
+  const items = needed.map(r => {
+    const qtyNeeded = r.orderQty > 0 ? r.orderQty : Math.max(0, Math.ceil(r.target - (r.onHand + r.onPO - r.onBO)));
+    const partStock = stockIndex[r.partNumber] || {};
+    // Single-file mode fallback: use DC OHB from the row's own data
+    if (otherWhses.length === 0 && (r.dcOhb > 0 || r.dcAvail > 0) && r.replenWhse) {
+      partStock[r.replenWhse] = { onHand: r.dcOhb, avail: r.dcAvail, replenWhse: r.replenWhse };
+    }
+    const sources = Object.entries(partStock).map(([w, s]) => ({
+      whse: w,
+      stock: stockField === 'avail' ? s.avail : s.onHand
+    })).filter(s => s.stock > 0);
+
+    // Routing decision
+    let route, sourceWhse, stockAtSource, splitFromHub = 0, splitNeedExternal = 0;
+    const hubStock = sources.find(s => s.whse === hub);
+    if (hubStock && hubStock.stock >= qtyNeeded) {
+      route = 'hub'; sourceWhse = hub; stockAtSource = hubStock.stock;
+    } else if (hubStock && hubStock.stock > 0) {
+      // Partial fill from hub; remainder to alternate DC or external
+      splitFromHub = hubStock.stock;
+      const otherSources = sources.filter(s => s.whse !== hub).sort((a,b) => b.stock - a.stock);
+      if (otherSources.length && otherSources[0].stock >= (qtyNeeded - splitFromHub)) {
+        route = 'split'; sourceWhse = otherSources[0].whse; stockAtSource = otherSources[0].stock;
+      } else if (otherSources.length) {
+        route = 'split'; sourceWhse = otherSources[0].whse; stockAtSource = otherSources[0].stock;
+        splitNeedExternal = qtyNeeded - splitFromHub - otherSources[0].stock;
+      } else {
+        route = 'split'; sourceWhse = null; splitNeedExternal = qtyNeeded - splitFromHub;
+      }
+    } else {
+      // Not at hub; check other DCs
+      const otherSources = sources.filter(s => s.whse !== hub).sort((a,b) => b.stock - a.stock);
+      if (otherSources.length) {
+        route = 'dc'; sourceWhse = otherSources[0].whse; stockAtSource = otherSources[0].stock;
+      } else {
+        route = 'external'; sourceWhse = null;
+      }
+    }
+
+    const ffaTarget = ffaTargetFor(r.linebuy);
+    return {
+      ...r, qtyNeeded, route, sourceWhse, stockAtSource,
+      splitFromHub, splitNeedExternal,
+      allSources: sources, ffaTarget, dcxEligible: ffaTarget !== null
+    };
+  });
+
+  // Group by source
+  const groups = { hub: [], external: [], dcs: {} };
+  items.forEach(it => {
+    if (it.route === 'hub') groups.hub.push(it);
+    else if (it.route === 'external') groups.external.push(it);
+    else {
+      // 'dc' or 'split' — categorize the non-hub portion
+      if (!groups.dcs[it.sourceWhse]) groups.dcs[it.sourceWhse] = [];
+      groups.dcs[it.sourceWhse].push(it);
+      if (it.route === 'split' && it.splitFromHub > 0) groups.hub.push({ ...it, route: 'hub-partial', qtyNeeded: it.splitFromHub });
+      if (it.splitNeedExternal > 0) groups.external.push({ ...it, route: 'external-partial', qtyNeeded: it.splitNeedExternal });
+    }
+  });
+
+  sourcingComputed = { items, groups, hub, otherWhses };
+}
+
+// ============= MAIN COMPUTE =============
 function computeAll() {
-  if (!rawData.length) return;
+  rawData = branchWhse ? warehouses[branchWhse] : [];
+  if (!rawData || !rawData.length) {
+    $('reorderResults').style.display = 'none';
+    $('drrResults').style.display = 'none';
+    $('costingResults').style.display = 'none';
+    $('sourcingResults').style.display = 'none';
+    $('sourcingEmpty').style.display = 'none';
+    return;
+  }
   computeReorder();
   computeDispositions();
+  computeSourcing();
   renderReorder();
   renderDRR();
   renderCosting();
+  renderSourcing();
   updateTabCounts();
 }
 
@@ -645,9 +933,10 @@ function updateTabCounts() {
   $('reorderCount').textContent = reorderComputed.filter(r => r.orderQty > 0).length.toLocaleString();
   $('drrCount').textContent = drrComputed.length.toLocaleString();
   $('costingCount').textContent = costingComputed.length.toLocaleString();
+  $('sourcingCount').textContent = sourcingComputed ? sourcingComputed.items.length.toLocaleString() : '—';
 }
 
-// RENDER HELPERS
+// ============= RENDER HELPERS =============
 function updateSortIndicators(table, key, dir) {
   document.querySelectorAll(`th[data-table="${table}"]`).forEach(th => {
     th.classList.toggle('sorted', th.dataset.sort === key);
@@ -655,7 +944,6 @@ function updateSortIndicators(table, key, dir) {
     if (ind) ind.textContent = th.dataset.sort === key ? (dir === 'asc' ? '▴' : '▾') : '▾';
   });
 }
-
 function sortRows(rows, key, dir) {
   return rows.slice().sort((a, b) => {
     let av = a[key], bv = b[key];
@@ -665,26 +953,20 @@ function sortRows(rows, key, dir) {
     return 0;
   });
 }
-
-function tierClass(tier) {
-  const m = (tier || '').match(/TIER (\d)/);
-  if (m) return 'tier-' + m[1];
-  if (tier === 'NS/TRN/OBS') return 'tier-ns';
-  return '';
+function tierClass(tier) { const m = (tier || '').match(/TIER (\d)/); if (m) return 'tier-' + m[1]; if (tier === 'NS/TRN/OBS') return 'tier-ns'; return ''; }
+function statusBadge(s) { if (!s) return '—'; return `<span class="status-badge status-${s.toLowerCase()}">${s}</span>`; }
+function uomBadge(u) { return `<span class="uom-badge uom-${u.toLowerCase()}">${u}</span>`; }
+function ffaBadge(t) {
+  if (t === null || t === undefined) return `<span class="ffa-badge ffa-none">No DCX</span>`;
+  if (t < 1) return `<span class="ffa-badge ffa-0">No min</span>`;
+  if (t === 500) return `<span class="ffa-badge ffa-500">$500</span>`;
+  if (t === 1500) return `<span class="ffa-badge ffa-1500">$1.5K</span>`;
+  if (t >= 5000) return `<span class="ffa-badge ffa-5000">$5K</span>`;
+  return `<span class="ffa-badge">$${t}</span>`;
 }
 
-function statusBadge(s) {
-  if (!s) return '—';
-  return `<span class="status-badge status-${s.toLowerCase()}">${s}</span>`;
-}
-
-function uomBadge(u) {
-  return `<span class="uom-badge uom-${u.toLowerCase()}">${u}</span>`;
-}
-
-// REORDER RENDER
+// ============= REORDER RENDER =============
 function renderReorder() {
-  if (!rawData.length) return;
   $('reorderResults').style.display = 'block';
   const search = $('reorderSearch').value.toLowerCase().trim();
   const vendor = $('reorderVendor').value;
@@ -698,19 +980,16 @@ function renderReorder() {
   const { key, dir } = sortState.reorder;
   const sorted = sortRows(filtered, key, dir);
   updateSortIndicators('reorder', key, dir);
-
   const needed = filtered.filter(r => r.orderQty > 0);
   const totalCost = needed.reduce((s, r) => s + r.extCost, 0);
   const totalUnits = needed.reduce((s, r) => s + r.orderQty, 0);
   const vendors = new Set(needed.map(r => r.vendor).filter(v => v)).size;
-
   $('reorderSummary').innerHTML = `
     <div class="stat"><div class="stat-label">Lines to Order</div><div class="stat-value accent">${needed.length.toLocaleString()}</div><div class="stat-sub">of ${reorderComputed.length.toLocaleString()} matched items</div></div>
     <div class="stat"><div class="stat-label">Total Units</div><div class="stat-value">${totalUnits.toLocaleString()}</div><div class="stat-sub">across all recommendations</div></div>
     <div class="stat"><div class="stat-label">Extended Cost</div><div class="stat-value">${fmt$(totalCost)}</div><div class="stat-sub">at UOM-corrected unit cost</div></div>
     <div class="stat"><div class="stat-label">Vendors</div><div class="stat-value">${vendors}</div><div class="stat-sub">to contact</div></div>
   `;
-
   $('reorderBody').innerHTML = sorted.slice(0, 1000).map(r => `
     <tr class="${r.orderQty > 0 ? 'highlight' : ''}">
       <td class="part">${r.partNumber}</td>
@@ -729,14 +1008,12 @@ function renderReorder() {
       <td class="num">${r.leadTime || '—'}</td>
     </tr>
   `).join('');
-
   $('reorderFilterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${reorderComputed.length.toLocaleString()}`;
   $('statusText').textContent = `Last computed · ${new Date().toLocaleTimeString()}`;
 }
 
-// DRR RENDER
+// ============= DRR RENDER =============
 function renderDRR() {
-  if (!rawData.length) return;
   $('drrResults').style.display = 'block';
   const search = $('drrSearch').value.toLowerCase().trim();
   const status = $('drrStatus').value;
@@ -748,17 +1025,14 @@ function renderDRR() {
   const { key, dir } = sortState.drr;
   const sorted = sortRows(filtered, key, dir);
   updateSortIndicators('drr', key, dir);
-
   const totalValue = filtered.reduce((s, r) => s + r.extCost, 0);
   const totalUnits = filtered.reduce((s, r) => s + r.onHand, 0);
-
   $('drrSummary').innerHTML = `
     <div class="stat"><div class="stat-label">DRR Lines</div><div class="stat-value good">${filtered.length.toLocaleString()}</div><div class="stat-sub">items eligible to return</div></div>
     <div class="stat"><div class="stat-label">Units to Return</div><div class="stat-value">${totalUnits.toLocaleString()}</div><div class="stat-sub">pieces on the ticket</div></div>
     <div class="stat"><div class="stat-label">Recoverable Value</div><div class="stat-value good">${fmt$(totalValue)}</div><div class="stat-sub">coming back to the branch</div></div>
     <div class="stat"><div class="stat-label">Hub</div><div class="stat-value">${$('drrHub').value}</div><div class="stat-sub">return destination</div></div>
   `;
-
   $('drrBody').innerHTML = sorted.slice(0, 1000).map(r => `
     <tr class="drr-row">
       <td class="part">${r.partNumber}</td>
@@ -773,13 +1047,11 @@ function renderDRR() {
       <td class="bin">${r.bin || '—'}</td>
     </tr>
   `).join('');
-
   $('drrFilterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${drrComputed.length.toLocaleString()}`;
 }
 
-// COSTING RENDER
+// ============= COSTING RENDER =============
 function renderCosting() {
-  if (!rawData.length) return;
   $('costingResults').style.display = 'block';
   const search = $('costingSearch').value.toLowerCase().trim();
   const reason = $('costingReason').value;
@@ -793,20 +1065,17 @@ function renderCosting() {
   const { key, dir } = sortState.costing;
   const sorted = sortRows(filtered, key, dir);
   updateSortIndicators('costing', key, dir);
-
   const totalValue = filtered.reduce((s, r) => s + r.extCost, 0);
   const totalUnits = filtered.reduce((s, r) => s + r.onHand, 0);
   const wrongHub = filtered.filter(r => r.reason === 'Wrong hub').length;
   const noWhse = filtered.filter(r => r.reason === 'No replen whse').length;
   const belowThresh = filtered.filter(r => r.reason === 'Below threshold').length;
-
   $('costingSummary').innerHTML = `
     <div class="stat"><div class="stat-label">Lines to Scrap</div><div class="stat-value danger">${filtered.length.toLocaleString()}</div><div class="stat-sub">can't be DRR'd</div></div>
     <div class="stat"><div class="stat-label">Units to Dispose</div><div class="stat-value">${totalUnits.toLocaleString()}</div><div class="stat-sub">going to the bin</div></div>
     <div class="stat"><div class="stat-label">Write-Off Value</div><div class="stat-value danger">${fmt$(totalValue)}</div><div class="stat-sub">real dollar loss</div></div>
     <div class="stat"><div class="stat-label">Breakdown</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;color:var(--ink);">Wrong hub: ${wrongHub}<br>No whse: ${noWhse}<br>&lt; threshold: ${belowThresh}</div></div>
   `;
-
   $('costingBody').innerHTML = sorted.slice(0, 1000).map(r => {
     const cls = r.reason === 'Below threshold' ? 'minor' : '';
     return `
@@ -824,11 +1093,143 @@ function renderCosting() {
       <td class="bin">${r.bin || '—'}</td>
     </tr>`;
   }).join('');
-
   $('costingFilterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${costingComputed.length.toLocaleString()}`;
 }
 
-// EVENT WIRING
+// ============= SOURCING RENDER =============
+function renderSourcing() {
+  if (!sourcingComputed) return;
+  const { items, groups, hub, otherWhses } = sourcingComputed;
+  if (!items.length) {
+    $('sourcingResults').style.display = 'none';
+    $('sourcingEmpty').style.display = 'block';
+    return;
+  }
+  $('sourcingResults').style.display = 'block';
+  $('sourcingEmpty').style.display = 'none';
+
+  // Summary
+  const hubLines = groups.hub.length;
+  const hubValue = groups.hub.reduce((s,i) => s + (i.qtyNeeded * i.cost), 0);
+  const dcCount = Object.keys(groups.dcs).length;
+  const extLines = groups.external.length;
+  const extValue = groups.external.reduce((s,i) => s + (i.qtyNeeded * i.cost), 0);
+
+  let modeNote = '';
+  if (otherWhses.length === 0) {
+    modeNote = `<div style="background:var(--warn-soft);border:1px solid var(--warn);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--ink);border-radius:2px;"><strong>Single-file mode:</strong> Only one warehouse uploaded. Sourcing uses the DC OHB column from your branch file, which shows only each item's primary replen DC. Upload reports from other DCs (e.g. 423, 5422) for full cross-DC visibility.</div>`;
+  }
+
+  $('sourcingSummary').innerHTML = `
+    <div class="stat"><div class="stat-label">Pull From Hub ${hub}</div><div class="stat-value accent">${hubLines.toLocaleString()}</div><div class="stat-sub">${fmt$(hubValue)} · hub truck</div></div>
+    <div class="stat"><div class="stat-label">From Other DCs</div><div class="stat-value info">${dcCount}</div><div class="stat-sub">${Object.values(groups.dcs).reduce((s,g)=>s+g.length,0)} lines via DCX</div></div>
+    <div class="stat"><div class="stat-label">External Sourcing</div><div class="stat-value danger">${extLines.toLocaleString()}</div><div class="stat-sub">${fmt$(extValue)} · need vendor</div></div>
+    <div class="stat"><div class="stat-label">Total Sourceable</div><div class="stat-value">${(items.length).toLocaleString()}</div><div class="stat-sub">lines in reorder list</div></div>
+  `;
+
+  // Build groups: hub first, then each DC, then external
+  let html = modeNote;
+
+  // HUB
+  html += renderSourceGroup({
+    title: `Hub ${hub} · Weekly Hub Truck`,
+    klass: 'hub',
+    badgeText: 'No freight',
+    items: groups.hub,
+    showFFA: false
+  });
+
+  // DCs sorted by line count descending
+  const dcSorted = Object.entries(groups.dcs).sort((a,b) => b[1].length - a[1].length);
+  dcSorted.forEach(([w, dcItems]) => {
+    // FFA calc for this DC: sum DCX-eligible items, find max FFA target
+    const dcxItems = dcItems.filter(i => i.dcxEligible);
+    const nonDcxItems = dcItems.filter(i => !i.dcxEligible);
+    const dcxValue = dcxItems.reduce((s,i) => s + (i.qtyNeeded * i.cost), 0);
+    const maxFFA = dcxItems.reduce((m,i) => Math.max(m, i.ffaTarget || 0), 0);
+    const ffaQualified = maxFFA > 0 && dcxValue >= maxFFA;
+    let ffaNote = '';
+    if (maxFFA > 0) {
+      const pct = Math.min(100, (dcxValue / maxFFA) * 100);
+      const cls = ffaQualified ? 'over' : 'under';
+      const statusText = ffaQualified ? `FFA QUALIFIED · ${fmt$(dcxValue)} ≥ $${maxFFA}` : `SHORT $${(maxFFA - dcxValue).toFixed(0)} · ${fmt$(dcxValue)} of $${maxFFA}`;
+      ffaNote = `<div class="ffa-progress">
+        <div class="ffa-bar"><div class="ffa-fill ${cls}" style="width:${pct}%"></div></div>
+        <div class="ffa-label ${cls}">${statusText}</div>
+      </div>`;
+    } else if (dcxItems.length === 0) {
+      ffaNote = `<div class="ffa-progress"><div class="ffa-label under">No DCX-eligible items · freight will apply</div></div>`;
+    }
+    html += renderSourceGroup({
+      title: `DC ${w}`,
+      klass: 'dc',
+      badgeText: dcxItems.length ? `${dcxItems.length} DCX-eligible` : 'Freight will apply',
+      items: dcItems,
+      showFFA: true,
+      ffaNote,
+      dcxValue,
+      nonDcxCount: nonDcxItems.length
+    });
+  });
+
+  // External
+  if (groups.external.length) {
+    html += renderSourceGroup({
+      title: 'External Sourcing',
+      klass: 'external',
+      badgeText: 'No DC has stock',
+      items: groups.external,
+      showFFA: false
+    });
+  }
+
+  $('sourcingGroups').innerHTML = html;
+}
+
+function renderSourceGroup({ title, klass, badgeText, items, showFFA, ffaNote, dcxValue, nonDcxCount }) {
+  if (!items.length) return '';
+  const totalValue = items.reduce((s,i) => s + (i.qtyNeeded * i.cost), 0);
+  const totalUnits = items.reduce((s,i) => s + i.qtyNeeded, 0);
+  let header = `
+    <div class="source-group">
+      <div class="source-group-header ${klass}">
+        <div>
+          <div class="source-title">${title}</div>
+          <div class="source-meta">${items.length} lines · <strong>${fmt(totalUnits)}</strong> units · <strong>${fmt$(totalValue)}</strong> · ${badgeText}</div>
+        </div>
+        ${ffaNote || ''}
+      </div>
+      <div class="source-table-wrap">
+        <table>
+          <thead><tr>
+            <th>Part #</th><th>Description</th><th>Linebuy</th><th>FFA</th>
+            <th class="num">Qty Needed</th><th class="num">Available</th><th class="num">Unit Cost</th><th class="num">Ext. Cost</th>
+            <th>Notes</th>
+          </tr></thead>
+          <tbody>`;
+  items.slice().sort((a,b) => (b.qtyNeeded * b.cost) - (a.qtyNeeded * a.cost)).forEach(it => {
+    let notes = '';
+    if (it.route === 'split') notes = `Split: ${fmt(it.splitFromHub)} from hub + ${fmt(it.qtyNeeded)} from DC ${it.sourceWhse}`;
+    else if (it.route === 'hub-partial') notes = `Partial from hub (rest from DC)`;
+    else if (it.route === 'external-partial') notes = `Unfilled qty · vendor needed`;
+    header += `
+      <tr>
+        <td class="part">${it.partNumber}</td>
+        <td class="desc" title="${(it.description||'').replace(/"/g,'&quot;')}">${it.description}</td>
+        <td><span class="uom-badge">${it.linebuy || '—'}</span></td>
+        <td>${ffaBadge(it.ffaTarget)}</td>
+        <td class="num">${fmt(it.qtyNeeded)}</td>
+        <td class="num">${fmt(it.stockAtSource || 0)}</td>
+        <td class="num">${it.cost > 0 ? (it.cost < 10 ? '$'+it.cost.toFixed(2) : fmt$(it.cost)) : '—'}</td>
+        <td class="num">${fmt$(it.qtyNeeded * it.cost)}</td>
+        <td class="desc" style="font-size:11px;">${notes}</td>
+      </tr>`;
+  });
+  header += `</tbody></table></div></div>`;
+  return header;
+}
+
+// ============= EVENT WIRING =============
 ['targetMonths','safetyMonths','tierFilter','roundMode','minLineValue','slowDemand','slowCost'].forEach(id => {
   $(id).addEventListener('change', computeAll);
   $(id).addEventListener('input', computeAll);
@@ -840,22 +1241,23 @@ $('smartFilter').addEventListener('change', () => {
 document.querySelector('.smart-filter-block').classList.toggle('enabled', $('smartFilter').checked);
 
 ['drrHub','drrMinValue','drrIncludeFlagged'].forEach(id => {
-  const handler = () => { if (rawData.length) { computeDispositions(); renderDRR(); renderCosting(); updateTabCounts(); }};
-  $(id).addEventListener('change', handler);
-  $(id).addEventListener('input', handler);
+  const h = () => { if (rawData.length) { computeDispositions(); computeSourcing(); renderDRR(); renderCosting(); renderSourcing(); updateTabCounts(); }};
+  $(id).addEventListener('change', h); $(id).addEventListener('input', h);
+});
+
+['srcHub','srcStockField','srcIncludeSkip'].forEach(id => {
+  const h = () => { if (rawData.length) { computeSourcing(); renderSourcing(); updateTabCounts(); }};
+  $(id).addEventListener('change', h); $(id).addEventListener('input', h);
 });
 
 ['reorderSearch','reorderVendor','reorderShow'].forEach(id => {
-  $(id).addEventListener('input', renderReorder);
-  $(id).addEventListener('change', renderReorder);
+  $(id).addEventListener('input', renderReorder); $(id).addEventListener('change', renderReorder);
 });
 ['drrSearch','drrStatus'].forEach(id => {
-  $(id).addEventListener('input', renderDRR);
-  $(id).addEventListener('change', renderDRR);
+  $(id).addEventListener('input', renderDRR); $(id).addEventListener('change', renderDRR);
 });
 ['costingSearch','costingReason','costingStatus'].forEach(id => {
-  $(id).addEventListener('input', renderCosting);
-  $(id).addEventListener('change', renderCosting);
+  $(id).addEventListener('input', renderCosting); $(id).addEventListener('change', renderCosting);
 });
 
 document.querySelectorAll('th[data-sort]').forEach(th => {
@@ -895,10 +1297,9 @@ $('exportReorder').addEventListener('click', () => {
     if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
     return true;
   });
-  csvExport(
-    `reorder-list-${new Date().toISOString().slice(0,10)}.csv`,
-    ['Part Number','Description','Tier','UOM','Vendor','Monthly Demand','On Hand','On PO','On BO','Target','Order Qty','Unit Cost','Extended Cost','Lead Time','Bin'],
-    rows.map(r => [r.partNumber, r.description, r.tier, r.uom, r.vendor, r.avgDmd, r.onHand, r.onPO, r.onBO, r.target, r.orderQty, r.cost.toFixed(4), r.extCost.toFixed(2), r.leadTime, r.bin])
+  csvExport(`reorder-list-${new Date().toISOString().slice(0,10)}.csv`,
+    ['Part Number','Description','Tier','UOM','Vendor','Monthly Demand','Order Qty','On Hand','On PO','On BO','Target','Unit Cost','Extended Cost','Lead Time','Bin'],
+    rows.map(r => [r.partNumber, r.description, r.tier, r.uom, r.vendor, r.avgDmd, r.orderQty, r.onHand, r.onPO, r.onBO, r.target, r.cost.toFixed(4), r.extCost.toFixed(2), r.leadTime, r.bin])
   );
 });
 
@@ -910,8 +1311,7 @@ $('exportDRR').addEventListener('click', () => {
     if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
     return true;
   });
-  csvExport(
-    `drr-ticket-hub${$('drrHub').value}-${new Date().toISOString().slice(0,10)}.csv`,
+  csvExport(`drr-ticket-hub${$('drrHub').value}-${new Date().toISOString().slice(0,10)}.csv`,
     ['Part Number','Description','Tier','Prod Status','UOM','Qty On Hand','Unit Cost','Extended Value','Replen Whse','Bin','Primary Vendor'],
     rows.map(r => [r.partNumber, r.description, r.tier, r.prodStatus, r.uom, r.onHand, r.cost.toFixed(4), r.extCost.toFixed(2), r.replenWhse, r.bin, r.vendor])
   );
@@ -927,8 +1327,7 @@ $('exportCosting').addEventListener('click', () => {
     if (search && !(r.partNumber + ' ' + r.description).toLowerCase().includes(search)) return false;
     return true;
   });
-  csvExport(
-    `costing-list-${new Date().toISOString().slice(0,10)}.csv`,
+  csvExport(`costing-list-${new Date().toISOString().slice(0,10)}.csv`,
     ['Part Number','Description','Tier','Prod Status','UOM','Qty On Hand','Unit Cost','Extended Value','Reason','Replen Whse','Bin','Prod Category'],
     rows.map(r => [r.partNumber, r.description, r.tier, r.prodStatus, r.uom, r.onHand, r.cost.toFixed(4), r.extCost.toFixed(2), r.reason, r.replenWhse, r.bin, r.prodCat])
   );
