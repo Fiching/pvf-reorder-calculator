@@ -41,10 +41,18 @@
   #fileInput { display: none; }
   .loaded-files { margin-top: 16px; display: none; }
   .loaded-files.show { display: block; }
+  .loaded-files-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .clear-all-btn { cursor: pointer; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; background: none; border: 1px solid var(--line); padding: 4px 10px; border-radius: 2px; }
+  .clear-all-btn:hover { color: var(--danger); border-color: var(--danger); }
   .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .file-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 2px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .file-chip { display: inline-flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 2px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
   .file-chip.branch { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
-  .file-chip .x { cursor: pointer; color: var(--ink-soft); font-weight: 600; padding: 0 4px; }
+  .file-chip .chip-main { display: flex; flex-direction: column; gap: 2px; }
+  .file-chip .chip-title { font-weight: 600; }
+  .file-chip .chip-dates { display: flex; gap: 10px; font-weight: 400; font-size: 10.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .03em; }
+  .file-chip.branch .chip-dates { color: var(--accent); opacity: .8; }
+  .file-chip .chip-dates b { color: inherit; font-weight: 600; }
+  .file-chip .x { cursor: pointer; color: var(--ink-soft); font-weight: 600; padding: 0 4px; align-self: flex-start; }
   .file-chip .x:hover { color: var(--danger); }
 
   .branch-bar { background: var(--surface); border: 1px solid var(--line); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
@@ -150,28 +158,6 @@
   .ffa-0 { background: var(--good-soft); color: var(--good); }
   .ffa-none { background: var(--danger-soft); color: var(--danger); }
 
-  /* History / snapshot tracking */
-  .change-badge { display: inline-block; padding: 2px 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; border-radius: 2px; }
-  .change-new { background: var(--good-soft); color: var(--good); }
-  .change-dropped { background: var(--danger-soft); color: var(--danger); }
-  .change-tier_changed { background: var(--accent-soft); color: var(--accent); }
-  .change-status_changed { background: var(--info-soft); color: var(--info); }
-  .change-qty_changed { background: var(--warn-soft); color: var(--warn); }
-  .delta-up { color: var(--good); }
-  .delta-down { color: var(--danger); }
-  .timeline-wrap { background: var(--surface); border: 1px solid var(--line); margin-bottom: 24px; }
-  .timeline-row { display: grid; grid-template-columns: 160px 1fr 120px 120px; gap: 16px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-  .timeline-row:last-child { border-bottom: none; }
-  .timeline-row.head { color: var(--ink-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; background: var(--bg); }
-  .timeline-bar-track { height: 10px; background: var(--line); border-radius: 4px; overflow: hidden; }
-  .timeline-bar-fill { height: 100%; background: var(--accent); }
-  .timeline-value { text-align: right; }
-  .api-status { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 2px; display: inline-block; }
-  .api-status.ok { background: var(--good-soft); color: var(--good); }
-  .api-status.off { background: var(--line); color: var(--ink-muted); }
-  .api-status.err { background: var(--danger-soft); color: var(--danger); }
-  .history-empty { padding: 60px 24px; text-align: center; color: var(--ink-muted); font-style: italic; font-size: 13px; background: var(--surface); border: 1px solid var(--line); }
-
   .skip-reason { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); padding: 2px 6px; background: var(--line); border-radius: 2px; cursor: help; }
 
   details.method { background: var(--surface); border: 1px solid var(--line); padding: 16px 20px; margin-bottom: 24px; border-radius: 2px; }
@@ -239,7 +225,10 @@
       <input type="file" id="fileInput" accept=".xlsx,.xls" multiple />
     </div>
     <div class="loaded-files" id="loadedFiles">
-      <div class="panel-title">Loaded warehouses</div>
+      <div class="loaded-files-head">
+        <div class="panel-title">Loaded warehouses</div>
+        <button type="button" class="clear-all-btn" id="clearAllBtn">Clear all</button>
+      </div>
       <div class="file-list" id="fileList"></div>
     </div>
   </div>
@@ -255,7 +244,6 @@
     <button class="tab" data-tab="sourcing">Sourcing <span class="tab-count" id="sourcingCount">—</span></button>
     <button class="tab" data-tab="drr">DRR Ticket <span class="tab-count" id="drrCount">—</span></button>
     <button class="tab" data-tab="costing">Costing <span class="tab-count" id="costingCount">—</span></button>
-    <button class="tab" data-tab="history">History <span class="tab-count" id="historyCount">—</span></button>
   </nav>
 
   <!-- REORDER TAB -->
@@ -535,82 +523,8 @@
     </div>
   </div>
 
-  <!-- HISTORY TAB -->
-  <div class="tab-panel" id="panel-history">
-    <div class="control-panel">
-      <div class="panel-header">
-        <div class="panel-title">History · Snapshot Tracking</div>
-        <span class="api-status off" id="historyApiStatus">Not configured</span>
-      </div>
-      <div class="config-grid">
-        <div class="config-item">
-          <label class="config-label">Compare From</label>
-          <select class="config-select" id="historyFrom"></select>
-        </div>
-        <div class="config-item">
-          <label class="config-label">Compare To</label>
-          <select class="config-select" id="historyTo"></select>
-        </div>
-        <div class="config-item" style="justify-content:flex-end;">
-          <button class="btn btn-secondary" id="historyRefresh">Refresh Snapshots</button>
-        </div>
-      </div>
-    </div>
-    <details class="method">
-      <summary>How snapshot tracking works</summary>
-      <div class="method-body">
-        <p>Every time you upload a report for your branch warehouse, the tool saves a dated snapshot of the <strong>full uploaded dataset</strong> (not just items flagged to reorder) to your configured History API, which stores it in a Google Drive folder you control.</p>
-        <p><strong>Timeline</strong> below shows every saved snapshot for this branch and how total extended value moved over time.</p>
-        <p><strong>Compare</strong> picks any two snapshots and shows every part number that's new, dropped, or changed tier, status, or on-hand quantity between them.</p>
-        <p>Nothing here changes the Reorder, Sourcing, DRR, or Costing tabs — this only tracks history alongside them.</p>
-      </div>
-    </details>
-
-    <div id="historyNoApi" style="display:none;">
-      <div class="history-empty">Snapshot history isn't wired up yet — set <code>HISTORY_API_BASE</code> near the top of the script to your History API's URL. See the History API's README for setup steps.</div>
-    </div>
-
-    <div id="historyContent" style="display:none;">
-      <div class="panel-title" style="margin: 0 0 12px;">Snapshot Timeline · Whse <span id="historyTimelineWhse"></span></div>
-      <div class="timeline-wrap" id="historyTimeline"></div>
-
-      <div id="historyDiffResults" style="display:none;">
-        <div class="summary-row" id="historySummary"></div>
-        <div class="filter-bar">
-          <input type="text" class="search-input" id="historySearch" placeholder="Search part # or description..." />
-          <label>Change:</label>
-          <select class="filter-select" id="historyChangeType">
-            <option value="">All changes</option>
-            <option value="new">New</option>
-            <option value="dropped">Dropped</option>
-            <option value="tier_changed">Tier changed</option>
-            <option value="status_changed">Status changed</option>
-            <option value="qty_changed">Qty changed</option>
-          </select>
-          <span class="filter-count" id="historyFilterCount"></span>
-          <button class="btn btn-secondary" id="exportHistory">Export CSV</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th data-table="history" data-sort="partNumber">Part # <span class="sort-ind">▾</span></th>
-              <th data-table="history" data-sort="description">Description <span class="sort-ind">▾</span></th>
-              <th data-table="history" data-sort="changeType">Change <span class="sort-ind">▾</span></th>
-              <th data-table="history" data-sort="tierTo">Tier <span class="sort-ind">▾</span></th>
-              <th data-table="history" data-sort="statusTo">Status <span class="sort-ind">▾</span></th>
-              <th class="num" data-table="history" data-sort="onHandDelta">On Hand Δ <span class="sort-ind">▾</span></th>
-              <th class="num" data-table="history" data-sort="valueDelta">Value Δ <span class="sort-ind">▾</span></th>
-            </tr></thead>
-            <tbody id="historyBody"></tbody>
-          </table>
-        </div>
-      </div>
-      <div id="historyDiffEmpty" class="history-empty" style="display:none;">Pick two snapshots above to compare, or upload at least two snapshots for this branch first.</div>
-    </div>
-  </div>
-
   <div class="foot">
-    <div>Built for PVF distribution workflows · Reorder · Sourcing · DRR · Costing · History</div>
+    <div>Built for PVF distribution workflows · Reorder · Sourcing · DRR · Costing</div>
     <div id="statusText"></div>
   </div>
 </div>
@@ -648,37 +562,18 @@ const FFA_TARGETS = {
 };
 const KNOWN_DC_NUMBERS = ['423','5422','1789','986','305','761','533','F140'];
 
-// ============= HISTORY API CONFIG =============
-// Set this to your deployed History API's URL (see pvf-inventory-history-api/README.md)
-// to turn on automatic snapshot saving and the History tab. Leave blank ('') to
-// leave snapshot tracking off — every other tab works exactly as before either way.
-const HISTORY_API_BASE = 'https://backendforreordercalc.onrender.com';
-let apiKeyMem = null;
-function ensureApiKey() {
-  if (apiKeyMem !== null) return apiKeyMem;
-  apiKeyMem = window.prompt('History API key (from the History API\'s API_KEY setting). Leave blank to skip snapshot history for this browser session:') || '';
-  return apiKeyMem;
-}
-function historyHeaders() {
-  return { 'Content-Type': 'application/json', 'X-API-Key': ensureApiKey() };
-}
-
 // ============= STATE =============
-let warehouses = {}; // { whseNum: [rows] }
+let warehouses = {}; // { whseNum: { rows: [...], uploadDate: Date, snapshotDate: Date|null, snapshotSource: 'zip'|'column'|null, fileName: string } }
 let branchWhse = null;
-let rawData = []; // = warehouses[branchWhse]
+let rawData = []; // = warehouses[branchWhse].rows
 let reorderComputed = [];
 let drrComputed = [];
 let costingComputed = [];
 let sourcingComputed = null;
-let historySnapshots = []; // [{id, capturedAt, rowCount, totalValue}], newest first
-let historyDiffChanges = [];
-let historyDiffMeta = null;
 const sortState = {
   reorder: { key: 'orderQty', dir: 'desc' },
   drr: { key: 'extCost', dir: 'desc' },
-  costing: { key: 'extCost', dir: 'desc' },
-  history: { key: 'valueDelta', dir: 'desc' }
+  costing: { key: 'extCost', dir: 'desc' }
 };
 
 // ============= HELPERS =============
@@ -719,6 +614,51 @@ function effectiveCost(r) {
   return { unit: avgCost, uom: 'EA', noCost: false };
 }
 
+// ============= DATE HELPERS =============
+// Ferguson exports are generated programmatically and carry no docProps
+// metadata. Every part inside the .xlsx zip is written in a single pass by
+// the export tool, so the very first local file header's MS-DOS date/time
+// is the true "report generated" moment (2-second resolution, no timezone —
+// treat as local time on the machine that produced the export).
+function dosDateTimeToDate(dosDate, dosTime) {
+  const day = dosDate & 0x1f;
+  const month = (dosDate >> 5) & 0x0f;
+  const year = ((dosDate >> 9) & 0x7f) + 1980;
+  const second = (dosTime & 0x1f) * 2;
+  const minute = (dosTime >> 5) & 0x3f;
+  const hour = (dosTime >> 11) & 0x1f;
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const d = new Date(year, month - 1, day, hour, minute, second);
+  return isNaN(d.getTime()) ? null : d;
+}
+function extractZipSnapshotDate(arrayBuffer) {
+  try {
+    const view = new DataView(arrayBuffer);
+    // Byte 0 of a well-formed zip is the first local file header signature.
+    if (view.getUint32(0, true) !== 0x04034b50) return null;
+    const time = view.getUint16(10, true);
+    const date = view.getUint16(12, true);
+    return dosDateTimeToDate(date, time);
+  } catch (e) { return null; }
+}
+// Fallback / sanity-check: latest value in a date-bearing column (e.g. "New
+// Prod Date"). The true snapshot date should be on/after this, so it's used
+// only when the zip timestamp can't be read.
+function maxColumnDate(rows, colName) {
+  let max = null;
+  rows.forEach(r => {
+    const v = r[colName];
+    if (!v) return;
+    const d = (v instanceof Date) ? v : new Date(v);
+    if (!isNaN(d.getTime()) && (!max || d > max)) max = d;
+  });
+  return max;
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 // ============= FILE UPLOAD =============
 const dropZone = $('dropZone'), fileInput = $('fileInput');
 dropZone.addEventListener('click', () => fileInput.click());
@@ -730,13 +670,26 @@ fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleF
 function handleFiles(files) {
   const arr = Array.from(files);
   let remaining = arr.length;
+  const uploadDate = new Date(); // moment this batch was loaded into the tool
   arr.forEach(file => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        const buf = e.target.result;
+        const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
         const sheet = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+
+        // Determine when this export was actually generated (not when it
+        // was uploaded here). Primary: zip container timestamp. Fallback:
+        // latest "New Prod Date" in the data if the zip read fails.
+        let snapshotDate = extractZipSnapshotDate(buf);
+        let snapshotSource = snapshotDate ? 'zip' : null;
+        if (!snapshotDate) {
+          snapshotDate = maxColumnDate(rows, 'New Prod Date');
+          snapshotSource = snapshotDate ? 'column' : null;
+        }
+
         // Group by Whse value (a single file should have a single Whse)
         const grouped = {};
         rows.forEach(r => {
@@ -746,11 +699,16 @@ function handleFiles(files) {
         });
         Object.entries(grouped).forEach(([w, rs]) => {
           // Merge by Alt Code (newer file wins for duplicate part numbers within same Whse)
-          if (!warehouses[w]) warehouses[w] = [];
+          if (!warehouses[w]) warehouses[w] = { rows: [], uploadDate: null, snapshotDate: null, snapshotSource: null, fileName: null };
           const existingByPart = {};
-          warehouses[w].forEach(r => { const pn = r['Alt Code']; if (pn) existingByPart[pn] = r; });
+          warehouses[w].rows.forEach(r => { const pn = r['Alt Code']; if (pn) existingByPart[pn] = r; });
           rs.forEach(r => { const pn = r['Alt Code']; if (pn) existingByPart[pn] = r; });
-          warehouses[w] = Object.values(existingByPart);
+          warehouses[w].rows = Object.values(existingByPart);
+          // Newest file wins for the displayed dates too, consistent with the row-merge rule above.
+          warehouses[w].uploadDate = uploadDate;
+          warehouses[w].snapshotDate = snapshotDate;
+          warehouses[w].snapshotSource = snapshotSource;
+          warehouses[w].fileName = file.name;
         });
       } catch (err) {
         console.error('File parse error:', err);
@@ -763,7 +721,6 @@ function handleFiles(files) {
         autoSelectBranch();
         renderFileList();
         computeAll();
-        saveSnapshotForBranch();
       }
     };
     reader.readAsArrayBuffer(file);
@@ -781,10 +738,21 @@ function autoSelectBranch() {
 function renderFileList() {
   const list = $('fileList');
   list.innerHTML = '';
-  Object.entries(warehouses).forEach(([w, rows]) => {
+  Object.entries(warehouses).forEach(([w, entry]) => {
     const chip = document.createElement('div');
     chip.className = 'file-chip' + (w === branchWhse ? ' branch' : '');
-    chip.innerHTML = `${w === branchWhse ? '★ ' : ''}Whse ${w} · ${rows.length.toLocaleString()} rows <span class="x" data-whse="${w}">×</span>`;
+    const snapshotLabel = entry.snapshotDate
+      ? fmtDate(entry.snapshotDate) + (entry.snapshotSource === 'column' ? ' (est.)' : '')
+      : '—';
+    chip.innerHTML = `
+      <div class="chip-main">
+        <div class="chip-title">${w === branchWhse ? '★ ' : ''}Whse ${w} · ${entry.rows.length.toLocaleString()} rows</div>
+        <div class="chip-dates">
+          <span><b>Snapshot:</b> ${snapshotLabel}</span>
+          <span><b>Uploaded:</b> ${fmtDate(entry.uploadDate)}</span>
+        </div>
+      </div>
+      <span class="x" data-whse="${w}" title="Delete this warehouse's data">×</span>`;
     list.appendChild(chip);
   });
   list.querySelectorAll('.x').forEach(x => {
@@ -799,6 +767,17 @@ function renderFileList() {
   });
   renderBranchSelector();
 }
+$('clearAllBtn').addEventListener('click', () => {
+  warehouses = {};
+  branchWhse = null;
+  rawData = [];
+  $('loadedFiles').classList.remove('show');
+  $('branchBar').style.display = 'none';
+  dropZone.classList.remove('has-file');
+  fileInput.value = '';
+  renderFileList();
+  computeAll();
+});
 
 function renderBranchSelector() {
   const sel = $('branchSelect');
@@ -806,7 +785,7 @@ function renderBranchSelector() {
   Object.keys(warehouses).forEach(w => {
     const opt = document.createElement('option');
     opt.value = w;
-    opt.textContent = `Whse ${w} (${warehouses[w].length.toLocaleString()} rows)`;
+    opt.textContent = `Whse ${w} (${warehouses[w].rows.length.toLocaleString()} rows)`;
     if (w === branchWhse) opt.selected = true;
     sel.appendChild(opt);
   });
@@ -824,7 +803,6 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     $('panel-' + tab.dataset.tab).classList.add('active');
-    if (tab.dataset.tab === 'history') loadHistorySnapshots();
   });
 });
 
@@ -943,7 +921,7 @@ function computeSourcing() {
   const otherWhses = Object.keys(warehouses).filter(w => w !== branchWhse);
   const stockIndex = {}; // { partNum: { whse: { onHand, avail, ... } } }
   otherWhses.forEach(w => {
-    warehouses[w].forEach(r => {
+    warehouses[w].rows.forEach(r => {
       const pn = r['Alt Code']; if (!pn) return;
       if (!stockIndex[pn]) stockIndex[pn] = {};
       stockIndex[pn][w] = {
@@ -1028,16 +1006,13 @@ function computeSourcing() {
 
 // ============= MAIN COMPUTE =============
 function computeAll() {
-  rawData = branchWhse ? warehouses[branchWhse] : [];
+  rawData = branchWhse ? warehouses[branchWhse].rows : [];
   if (!rawData || !rawData.length) {
     $('reorderResults').style.display = 'none';
     $('drrResults').style.display = 'none';
     $('costingResults').style.display = 'none';
     $('sourcingResults').style.display = 'none';
     $('sourcingEmpty').style.display = 'none';
-    $('historyContent').style.display = 'none';
-    historySnapshots = []; historyDiffChanges = [];
-    $('historyCount').textContent = '—';
     return;
   }
   computeReorder();
@@ -1350,212 +1325,6 @@ function renderSourceGroup({ title, klass, badgeText, items, showFFA, ffaNote, d
   return header;
 }
 
-// ============= HISTORY: SNAPSHOT SAVE =============
-function buildSnapshotRows(rows) {
-  return rows.map(r => {
-    const { unit: unitCost, uom } = effectiveCost(r);
-    const onHand = num(r['On Hand']);
-    const extValue = num(r['Ext OHB Amt']) || (onHand * unitCost);
-    return {
-      partNumber: r['Alt Code'] || '',
-      description: r['Description'] || '',
-      tier: r['Tier'] || '',
-      prodStatus: r['Prod Status'] || '',
-      onHand, onPO: num(r['On PO']), onBO: num(r['On BO']),
-      avgDmd: num(r['Avg Dmd Amt']),
-      unitCost, uom, extValue,
-      replenWhse: cleanWhse(r['Replen Whse']),
-      bin: r['Bin Location'] || '',
-      vendor: r['Primary Vendor'] || r['Replen Vendor'] || '',
-      linebuy: cleanLinebuy(r['Linebuy']),
-    };
-  });
-}
-
-async function saveSnapshotForBranch() {
-  if (!HISTORY_API_BASE || !branchWhse || !warehouses[branchWhse] || !warehouses[branchWhse].length) return;
-  try {
-    const rows = buildSnapshotRows(warehouses[branchWhse]);
-    const res = await fetch(`${HISTORY_API_BASE}/api/snapshots`, {
-      method: 'POST', headers: historyHeaders(),
-      body: JSON.stringify({ whse: branchWhse, rows })
-    });
-    if (!res.ok) throw new Error('save failed: HTTP ' + res.status);
-    $('statusText').textContent = `Snapshot saved · ${new Date().toLocaleTimeString()}`;
-    if (document.getElementById('panel-history').classList.contains('active')) loadHistorySnapshots();
-  } catch (err) {
-    console.error('Snapshot save error:', err);
-    $('statusText').textContent = 'Snapshot save failed — check History API connection';
-  }
-}
-
-// ============= HISTORY: LOAD + RENDER =============
-async function loadHistorySnapshots() {
-  if (!HISTORY_API_BASE) {
-    $('historyNoApi').style.display = 'block';
-    $('historyContent').style.display = 'none';
-    return;
-  }
-  if (!branchWhse) return;
-  $('historyTimelineWhse').textContent = branchWhse;
-  try {
-    const res = await fetch(`${HISTORY_API_BASE}/api/snapshots?whse=${encodeURIComponent(branchWhse)}`, { headers: historyHeaders() });
-    if (!res.ok) throw new Error('list failed: HTTP ' + res.status);
-    historySnapshots = await res.json();
-    $('historyApiStatus').textContent = 'Connected'; $('historyApiStatus').className = 'api-status ok';
-    $('historyNoApi').style.display = 'none';
-    $('historyContent').style.display = 'block';
-    $('historyCount').textContent = historySnapshots.length.toLocaleString();
-    renderHistoryTimeline();
-    populateHistorySelectors();
-    if (historySnapshots.length >= 2) {
-      $('historyFrom').value = historySnapshots[1].id;
-      $('historyTo').value = historySnapshots[0].id;
-      loadHistoryDiff();
-    } else {
-      $('historyDiffResults').style.display = 'none';
-      $('historyDiffEmpty').style.display = 'block';
-      $('historyDiffEmpty').textContent = 'Upload at least two snapshots for this branch to compare what changed.';
-    }
-  } catch (err) {
-    console.error('History load error:', err);
-    $('historyApiStatus').textContent = 'Connection error'; $('historyApiStatus').className = 'api-status err';
-  }
-}
-
-function renderHistoryTimeline() {
-  const wrap = $('historyTimeline');
-  if (!historySnapshots.length) { wrap.innerHTML = '<div class="history-empty">No snapshots saved yet for this branch.</div>'; return; }
-  const maxValue = Math.max(...historySnapshots.map(s => s.totalValue), 1);
-  let html = `<div class="timeline-row head"><div>Date</div><div>Extended Value</div><div class="timeline-value">Items</div><div class="timeline-value">Δ Value</div></div>`;
-  historySnapshots.forEach((s, i) => {
-    const older = historySnapshots[i + 1];
-    const delta = older ? s.totalValue - older.totalValue : null;
-    const pct = Math.max(2, (s.totalValue / maxValue) * 100);
-    const dateStr = new Date(s.capturedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    const deltaHtml = delta === null ? '—' : `<span class="${delta >= 0 ? 'delta-up' : 'delta-down'}">${delta >= 0 ? '+' : ''}${fmt$(delta)}</span>`;
-    html += `<div class="timeline-row">
-      <div>${dateStr}</div>
-      <div>${fmt$(s.totalValue)}<div class="timeline-bar-track" style="margin-top:5px;"><div class="timeline-bar-fill" style="width:${pct}%"></div></div></div>
-      <div class="timeline-value">${fmt(s.rowCount)}</div>
-      <div class="timeline-value">${deltaHtml}</div>
-    </div>`;
-  });
-  wrap.innerHTML = html;
-}
-
-function populateHistorySelectors() {
-  const fromSel = $('historyFrom'), toSel = $('historyTo');
-  const curFrom = fromSel.value, curTo = toSel.value;
-  const opts = historySnapshots.map(s => {
-    const label = new Date(s.capturedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    return `<option value="${s.id}">${label} · ${fmt(s.rowCount)} items</option>`;
-  }).join('');
-  fromSel.innerHTML = opts; toSel.innerHTML = opts;
-  if (curFrom && historySnapshots.some(s => s.id === curFrom)) fromSel.value = curFrom;
-  if (curTo && historySnapshots.some(s => s.id === curTo)) toSel.value = curTo;
-}
-
-async function loadHistoryDiff() {
-  const fromId = $('historyFrom').value, toId = $('historyTo').value;
-  if (!fromId || !toId || fromId === toId) {
-    $('historyDiffResults').style.display = 'none';
-    $('historyDiffEmpty').style.display = 'block';
-    $('historyDiffEmpty').textContent = 'Pick two different snapshots above to compare.';
-    return;
-  }
-  try {
-    const res = await fetch(`${HISTORY_API_BASE}/api/diff?whse=${encodeURIComponent(branchWhse)}&from=${encodeURIComponent(fromId)}&to=${encodeURIComponent(toId)}`, { headers: historyHeaders() });
-    if (!res.ok) throw new Error('diff failed: HTTP ' + res.status);
-    const data = await res.json();
-    historyDiffMeta = { from: data.from, to: data.to };
-    historyDiffChanges = (data.changes || []).map(c => {
-      const onHandFrom = num(c.onHandFrom), onHandTo = num(c.onHandTo);
-      const valueFrom = num(c.valueFrom), valueTo = num(c.valueTo);
-      return {
-        ...c,
-        tierTo: c.tierTo || c.tierFrom || '',
-        statusTo: c.statusTo || c.statusFrom || '',
-        onHandFrom, onHandTo,
-        onHandDelta: c.onHandDelta !== undefined && c.onHandDelta !== null ? num(c.onHandDelta) : (onHandTo - onHandFrom),
-        valueFrom, valueTo,
-        valueDelta: valueTo - valueFrom,
-      };
-    });
-    $('historyDiffEmpty').style.display = 'none';
-    renderHistoryDiff();
-  } catch (err) {
-    console.error('History diff error:', err);
-    $('historyDiffResults').style.display = 'none';
-    $('historyDiffEmpty').style.display = 'block';
-    $('historyDiffEmpty').textContent = 'Could not load comparison — check History API connection.';
-  }
-}
-
-function changeLabel(t) {
-  return { new: 'New', dropped: 'Dropped', tier_changed: 'Tier Changed', status_changed: 'Status Changed', qty_changed: 'Qty Changed' }[t] || t;
-}
-function tierDiffCell(c) {
-  if (c.changeType === 'tier_changed') return `<span class="tier-badge ${tierClass(c.tierFrom)}">${c.tierFrom || '—'}</span> → <span class="tier-badge ${tierClass(c.tierTo)}">${c.tierTo || '—'}</span>`;
-  const t = c.tierTo || c.tierFrom;
-  return `<span class="tier-badge ${tierClass(t)}">${t || '—'}</span>`;
-}
-function statusDiffCell(c) {
-  if (c.changeType === 'status_changed') return `${statusBadge(c.statusFrom)} → ${statusBadge(c.statusTo)}`;
-  return statusBadge(c.statusTo || c.statusFrom);
-}
-function onHandDeltaCell(c) {
-  const d = c.onHandDelta;
-  const cls = d > 0 ? 'delta-up' : (d < 0 ? 'delta-down' : '');
-  const sign = d > 0 ? '+' : '';
-  return `<span class="${cls}" title="${fmt(c.onHandFrom)} → ${fmt(c.onHandTo)}">${sign}${fmt(d)}</span>`;
-}
-function valueDeltaCell(c) {
-  const d = c.valueDelta;
-  const cls = d > 0 ? 'delta-up' : (d < 0 ? 'delta-down' : '');
-  const sign = d > 0 ? '+' : '';
-  return `<span class="${cls}" title="${fmt$(c.valueFrom)} → ${fmt$(c.valueTo)}">${sign}${fmt$(d)}</span>`;
-}
-
-function renderHistoryDiff() {
-  $('historyDiffResults').style.display = 'block';
-  const search = $('historySearch').value.toLowerCase().trim();
-  const changeType = $('historyChangeType').value;
-  const filtered = historyDiffChanges.filter(c => {
-    if (changeType && c.changeType !== changeType) return false;
-    if (search && !((c.partNumber || '') + ' ' + (c.description || '')).toLowerCase().includes(search)) return false;
-    return true;
-  });
-  const { key, dir } = sortState.history;
-  const sorted = sortRows(filtered, key, dir);
-  updateSortIndicators('history', key, dir);
-
-  const newCount = historyDiffChanges.filter(c => c.changeType === 'new').length;
-  const droppedCount = historyDiffChanges.filter(c => c.changeType === 'dropped').length;
-  const changedCount = historyDiffChanges.filter(c => c.changeType !== 'new' && c.changeType !== 'dropped').length;
-  const netValueDelta = historyDiffChanges.reduce((s, c) => s + c.valueDelta, 0);
-
-  $('historySummary').innerHTML = `
-    <div class="stat"><div class="stat-label">New Items</div><div class="stat-value good">${newCount.toLocaleString()}</div><div class="stat-sub">appeared since prior snapshot</div></div>
-    <div class="stat"><div class="stat-label">Dropped Items</div><div class="stat-value danger">${droppedCount.toLocaleString()}</div><div class="stat-sub">no longer in inventory</div></div>
-    <div class="stat"><div class="stat-label">Changed Items</div><div class="stat-value info">${changedCount.toLocaleString()}</div><div class="stat-sub">tier, status, or qty moved</div></div>
-    <div class="stat"><div class="stat-label">Net Value Change</div><div class="stat-value ${netValueDelta >= 0 ? 'good' : 'danger'}">${netValueDelta >= 0 ? '+' : ''}${fmt$(netValueDelta)}</div><div class="stat-sub">across all changed lines</div></div>
-  `;
-
-  $('historyBody').innerHTML = sorted.slice(0, 1000).map(c => `
-    <tr>
-      <td class="part">${c.partNumber}</td>
-      <td class="desc" title="${(c.description || '').replace(/"/g, '&quot;')}">${c.description || ''}</td>
-      <td><span class="change-badge change-${c.changeType}">${changeLabel(c.changeType)}</span></td>
-      <td>${tierDiffCell(c)}</td>
-      <td>${statusDiffCell(c)}</td>
-      <td class="num">${onHandDeltaCell(c)}</td>
-      <td class="num">${valueDeltaCell(c)}</td>
-    </tr>
-  `).join('');
-  $('historyFilterCount').textContent = `Showing ${filtered.length.toLocaleString()} of ${historyDiffChanges.length.toLocaleString()}`;
-}
-
 // ============= EVENT WIRING =============
 ['targetMonths','safetyMonths','tierFilter','roundMode','minLineValue','slowDemand','slowCost'].forEach(id => {
   $(id).addEventListener('change', computeAll);
@@ -1586,22 +1355,16 @@ document.querySelector('.smart-filter-block').classList.toggle('enabled', $('sma
 ['costingSearch','costingReason','costingStatus'].forEach(id => {
   $(id).addEventListener('input', renderCosting); $(id).addEventListener('change', renderCosting);
 });
-['historySearch','historyChangeType'].forEach(id => {
-  $(id).addEventListener('input', renderHistoryDiff); $(id).addEventListener('change', renderHistoryDiff);
-});
-$('historyRefresh').addEventListener('click', loadHistorySnapshots);
-['historyFrom','historyTo'].forEach(id => $(id).addEventListener('change', loadHistoryDiff));
 
 document.querySelectorAll('th[data-sort]').forEach(th => {
   th.addEventListener('click', () => {
     const table = th.dataset.table, key = th.dataset.sort;
     const state = sortState[table];
     if (state.key === key) state.dir = state.dir === 'asc' ? 'desc' : 'asc';
-    else { state.key = key; state.dir = ['partNumber','description','tier','vendor','prodStatus','reason','bin','replenWhse','changeType','tierTo','statusTo'].includes(key) ? 'asc' : 'desc'; }
+    else { state.key = key; state.dir = ['partNumber','description','tier','vendor','prodStatus','reason','bin','replenWhse'].includes(key) ? 'asc' : 'desc'; }
     if (table === 'reorder') renderReorder();
     else if (table === 'drr') renderDRR();
-    else if (table === 'costing') renderCosting();
-    else if (table === 'history') renderHistoryDiff();
+    else renderCosting();
   });
 });
 
@@ -1663,20 +1426,6 @@ $('exportCosting').addEventListener('click', () => {
   csvExport(`costing-list-${new Date().toISOString().slice(0,10)}.csv`,
     ['Part Number','Description','Tier','Prod Status','UOM','Qty On Hand','Unit Cost','Extended Value','Reason','Replen Whse','Bin','Prod Category'],
     rows.map(r => [r.partNumber, r.description, r.tier, r.prodStatus, r.uom, r.onHand, r.cost.toFixed(4), r.extCost.toFixed(2), r.reason, r.replenWhse, r.bin, r.prodCat])
-  );
-});
-
-$('exportHistory').addEventListener('click', () => {
-  const search = $('historySearch').value.toLowerCase().trim();
-  const changeType = $('historyChangeType').value;
-  const rows = historyDiffChanges.filter(c => {
-    if (changeType && c.changeType !== changeType) return false;
-    if (search && !((c.partNumber || '') + ' ' + (c.description || '')).toLowerCase().includes(search)) return false;
-    return true;
-  });
-  csvExport(`history-diff-${branchWhse}-${new Date().toISOString().slice(0,10)}.csv`,
-    ['Part Number','Description','Change','Tier From','Tier To','Status From','Status To','On Hand From','On Hand To','On Hand Delta','Value From','Value To','Value Delta'],
-    rows.map(c => [c.partNumber, c.description, changeLabel(c.changeType), c.tierFrom || '', c.tierTo || '', c.statusFrom || '', c.statusTo || '', c.onHandFrom, c.onHandTo, c.onHandDelta, (c.valueFrom||0).toFixed(2), (c.valueTo||0).toFixed(2), c.valueDelta.toFixed(2)])
   );
 });
 </script>
